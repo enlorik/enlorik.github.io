@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Management API — Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --border: #1e2535;
+    --accent: #4f9eff;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --node-bg: #141926;
+    --node-border: #2a3347;
+    --dim: 0.15;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrapper { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; }
+
+  /* HEADER */
+  header { margin-bottom: 32px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  h1 { font-family: 'Syne', sans-serif; font-size: clamp(22px, 4vw, 38px); font-weight: 800; line-height: 1.1; }
+  h1 span { color: var(--accent); }
+  .subtitle { margin-top: 8px; font-size: 11px; color: var(--muted); }
+
+  /* FLOW BUTTONS */
+  .flow-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .flow-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--node-border);
+    background: var(--node-bg);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .flow-btn:hover { border-color: var(--accent); color: var(--text); }
+  .flow-btn.active { color: var(--bg); font-weight: 600; }
+  .flow-btn[data-flow="register"].active    { background: #4f9eff; border-color: #4f9eff; }
+  .flow-btn[data-flow="login"].active       { background: #a78bfa; border-color: #a78bfa; }
+  .flow-btn[data-flow="verify"].active      { background: #34d399; border-color: #34d399; }
+  .flow-btn[data-flow="forgot"].active      { background: #fb923c; border-color: #fb923c; }
+  .flow-btn[data-flow="reset"].active       { background: #f472b6; border-color: #f472b6; }
+  .flow-btn[data-flow="usercrud"].active    { background: #facc15; border-color: #facc15; }
+  .flow-btn[data-flow="logsummary"].active  { background: #a78bfa; border-color: #a78bfa; }
+  .flow-btn[data-flow="none"].active        { background: var(--border); border-color: var(--muted); color: var(--text); }
+
+  /* STEP DESCRIPTION */
+  .step-desc {
+    min-height: 44px;
+    margin-bottom: 24px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    font-size: 12px;
+    color: var(--muted);
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .step-desc.active { border-color: var(--accent); color: var(--text); background: rgba(79,158,255,0.05); }
+  .step-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    min-width: 28px;
+  }
+
+  /* DIAGRAM */
+  .diagram { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .layer { width: 100%; }
+
+  /* ARROW */
+  .arrow {
+    display: flex; justify-content: center; align-items: center;
+    height: 36px; position: relative;
+  }
+  .arrow::before {
+    content: ''; position: absolute;
+    width: 2px; height: 100%;
+    background: linear-gradient(to bottom, var(--border), rgba(79,158,255,0.4));
+  }
+  .arrow::after { content: '▼'; font-size: 10px; color: var(--accent); position: absolute; bottom: 0; }
+  .arrow.dashed::before { background: none; border-left: 2px dashed rgba(167,139,250,0.4); }
+  .arrow.dashed::after { color: var(--accent2); }
+
+  /* SPLIT ARROW */
+  .split-arrow { height: 48px; width: 100%; position: relative; }
+  .split-arrow svg { position: absolute; width: 100%; height: 100%; overflow: visible; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .connector-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; height: 36px; }
+  .connector-cell { display: flex; justify-content: center; align-items: center; position: relative; }
+  .connector-cell::before {
+    content: ''; position: absolute;
+    width: 2px; height: 100%;
+    background: linear-gradient(to bottom, var(--border), rgba(79,158,255,0.4));
+  }
+  .connector-cell.purple::before { background: linear-gradient(to bottom, var(--border), rgba(167,139,250,0.4)); }
+  .connector-cell::after { content: '▼'; font-size: 9px; color: var(--accent); position: absolute; bottom: 0; }
+  .connector-cell.purple::after { color: var(--accent2); }
+  .connector-cell.invisible { opacity: 0; pointer-events: none; }
+
+  /* SECTION */
+  .section {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; width: 100%; position: relative;
+    background: rgba(255,255,255,0.015);
+    transition: border-color 0.3s;
+  }
+  .section-title {
+    position: absolute; top: -10px; left: 16px;
+    background: var(--bg); padding: 0 8px;
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .section.blue   { border-color: rgba(79,158,255,0.2);  } .section.blue   .section-title { color: var(--accent);  }
+  .section.purple { border-color: rgba(167,139,250,0.2); } .section.purple .section-title { color: var(--accent2); }
+  .section.green  { border-color: rgba(52,211,153,0.2);  } .section.green  .section-title { color: var(--accent3); }
+  .section.orange { border-color: rgba(251,146,60,0.2);  } .section.orange .section-title { color: var(--accent4); }
+  .layer-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+
+  /* NODE */
+  .node {
+    background: var(--node-bg);
+    border: 1px solid var(--node-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 120px; max-width: 200px;
+    text-align: center;
+    position: relative;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: default;
+  }
+  .node-icon { font-size: 15px; margin-bottom: 3px; display: block; }
+  .node-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .node-sub   { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+  .badge {
+    display: inline-block; font-size: 9px; padding: 1px 6px;
+    border-radius: 99px; border: 1px solid; margin-top: 4px; letter-spacing: 0.05em;
+  }
+  .badge.blue   { color: var(--accent);  border-color: rgba(79,158,255,0.4);   }
+  .badge.purple { color: var(--accent2); border-color: rgba(167,139,250,0.4);  }
+  .badge.green  { color: var(--accent3); border-color: rgba(52,211,153,0.4);   }
+  .badge.orange { color: var(--accent4); border-color: rgba(251,146,60,0.4);   }
+  .badge.pink   { color: #f472b6;        border-color: rgba(244,114,182,0.4);  }
+  .badge.yellow { color: #facc15;        border-color: rgba(250,204,21,0.4);   }
+
+  /* DIMMED STATE — when a flow is active, everything dims by default */
+  body.flow-active .node         { opacity: var(--dim); transform: scale(0.97); }
+  body.flow-active .section      { border-color: rgba(255,255,255,0.04) !important; }
+  body.flow-active .arrow::before,
+  body.flow-active .arrow::after,
+  body.flow-active .connector-cell::before,
+  body.flow-active .connector-cell::after { opacity: 0.1; }
+  body.flow-active .split-arrow svg line,
+  body.flow-active .split-arrow svg polygon { opacity: 0.05; }
+
+  /* HIGHLIGHTED NODE */
+  .node.highlight-blue   { opacity: 1 !important; transform: scale(1.05) !important; border-color: var(--accent)  !important; box-shadow: 0 0 20px rgba(79,158,255,0.35);   }
+  .node.highlight-purple { opacity: 1 !important; transform: scale(1.05) !important; border-color: var(--accent2) !important; box-shadow: 0 0 20px rgba(167,139,250,0.35); }
+  .node.highlight-green  { opacity: 1 !important; transform: scale(1.05) !important; border-color: var(--accent3) !important; box-shadow: 0 0 20px rgba(52,211,153,0.35);  }
+  .node.highlight-orange { opacity: 1 !important; transform: scale(1.05) !important; border-color: var(--accent4) !important; box-shadow: 0 0 20px rgba(251,146,60,0.35);  }
+  .node.highlight-pink   { opacity: 1 !important; transform: scale(1.05) !important; border-color: #f472b6       !important; box-shadow: 0 0 20px rgba(244,114,182,0.35); }
+  .node.highlight-yellow { opacity: 1 !important; transform: scale(1.05) !important; border-color: #facc15       !important; box-shadow: 0 0 20px rgba(250,204,21,0.35);  }
+
+  /* STEP indicator on node */
+  .node .step-badge {
+    display: none;
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px; font-weight: 800;
+    color: var(--bg);
+    align-items: center; justify-content: center;
+    z-index: 10;
+  }
+  .node.highlight-blue   .step-badge { display: flex; background: var(--accent);  }
+  .node.highlight-purple .step-badge { display: flex; background: var(--accent2); }
+  .node.highlight-green  .step-badge { display: flex; background: var(--accent3); }
+  .node.highlight-orange .step-badge { display: flex; background: var(--accent4); }
+  .node.highlight-pink   .step-badge { display: flex; background: #f472b6;        }
+  .node.highlight-yellow .step-badge { display: flex; background: #facc15;        }
+
+  /* LEGEND */
+  .legend { margin-top: 36px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 11px; color: var(--muted); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid; }
+  .legend-dot.blue   { border-color: var(--accent);  }
+  .legend-dot.purple { border-color: var(--accent2); }
+  .legend-dot.green  { border-color: var(--accent3); }
+  .legend-dot.orange { border-color: var(--accent4); }
+
+  @keyframes pop { 0%{transform:scale(0.9)} 60%{transform:scale(1.08)} 100%{transform:scale(1.05)} }
+  .node.highlight-blue, .node.highlight-purple, .node.highlight-green,
+  .node.highlight-orange, .node.highlight-pink, .node.highlight-yellow {
+    animation: pop 0.3s ease forwards;
+  }
+
+  @media (max-width: 600px) {
+    .two-col { grid-template-columns: 1fr; }
+    .connector-row { grid-template-columns: 1fr; }
+    .node { min-width: 90px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <p class="eyebrow">Architecture Overview</p>
+    <h1>User Management <span>API</span></h1>
+    <p class="subtitle">Spring Boot · Session Auth · PostgreSQL · OpenAI log summarization</p>
+  </header>
+
+  <!-- FLOW BUTTONS -->
+  <div class="flow-bar">
+    <button class="flow-btn" data-flow="register">📝 Register</button>
+    <button class="flow-btn" data-flow="login">🔑 Login</button>
+    <button class="flow-btn" data-flow="verify">✅ Verify Email</button>
+    <button class="flow-btn" data-flow="forgot">🔒 Forgot Password</button>
+    <button class="flow-btn" data-flow="reset">🔄 Reset Password</button>
+    <button class="flow-btn" data-flow="usercrud">👤 User CRUD</button>
+    <button class="flow-btn" data-flow="logsummary">📋 Log Summary</button>
+    <button class="flow-btn active" data-flow="none">✦ Show All</button>
+  </div>
+
+  <!-- STEP DESCRIPTION -->
+  <div class="step-desc" id="stepDesc">
+    <span class="step-number" id="stepNum">—</span>
+    <span id="stepText">Select a flow above to see it light up step by step</span>
+  </div>
+
+  <!-- DIAGRAM -->
+  <div class="diagram">
+
+    <!-- CLIENT -->
+    <div class="layer">
+      <div class="layer-row">
+        <div class="node" id="n-client">
+          <span class="step-badge" id="sb-client"></span>
+          <span class="node-icon">🌐</span>
+          <div class="node-title">Browser / API Client</div>
+          <div class="node-sub">HTTP requests</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- RATE LIMIT -->
+    <div class="layer">
+      <div class="layer-row">
+        <div class="node" id="n-ratelimit">
+          <span class="step-badge" id="sb-ratelimit"></span>
+          <span class="node-icon">🛡️</span>
+          <div class="node-title">RateLimitFilter</div>
+          <div class="node-sub">IP-based throttle</div>
+          <span class="badge orange">Filter</span>
+        </div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- SECURITY -->
+    <div class="layer">
+      <div class="layer-row">
+        <div class="node" id="n-security">
+          <span class="step-badge" id="sb-security"></span>
+          <span class="node-icon">🔐</span>
+          <div class="node-title">SecurityFilterChain</div>
+          <div class="node-sub">Session auth · RBAC · CSRF</div>
+          <span class="badge purple">Spring Security</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPLIT ARROW -->
+    <div class="split-arrow">
+      <svg viewBox="0 0 900 48" preserveAspectRatio="none">
+        <line x1="450" y1="0" x2="225" y2="48" stroke="#2a3347" stroke-width="1.5"/>
+        <line x1="450" y1="0" x2="675" y2="48" stroke="#2a3347" stroke-width="1.5"/>
+        <polygon points="222,44 228,44 225,50" fill="#4f9eff" opacity="0.6"/>
+        <polygon points="672,44 678,44 675,50" fill="#a78bfa" opacity="0.6"/>
+        <text x="120" y="28" fill="#4f9eff" font-size="9" font-family="JetBrains Mono" opacity="0.5">USER FLOW</text>
+        <text x="680" y="28" fill="#a78bfa" font-size="9" font-family="JetBrains Mono" opacity="0.5">LOG FLOW</text>
+      </svg>
+    </div>
+
+    <!-- CONTROLLERS -->
+    <div class="layer">
+      <div class="two-col">
+        <div class="section blue">
+          <span class="section-title">Controllers · User</span>
+          <div class="layer-row" style="gap:6px;">
+            <div class="node" id="n-pagecontroller" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-pagecontroller"></span>
+              <div class="node-title" style="font-size:10px;">PageController</div>
+              <div class="node-sub">/login /register<br>/admin /user</div>
+            </div>
+            <div class="node" id="n-registrationcontroller" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-registrationcontroller"></span>
+              <div class="node-title" style="font-size:10px;">RegistrationController</div>
+              <div class="node-sub">POST /register</div>
+            </div>
+            <div class="node" id="n-emailverificationcontroller" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-emailverificationcontroller"></span>
+              <div class="node-title" style="font-size:10px;">EmailVerificationController</div>
+              <div class="node-sub">GET /verify-email</div>
+            </div>
+            <div class="node" id="n-forgotpasswordcontroller" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-forgotpasswordcontroller"></span>
+              <div class="node-title" style="font-size:10px;">ForgotPasswordController</div>
+              <div class="node-sub">GET/POST /forgot-password</div>
+            </div>
+            <div class="node" id="n-resetpasswordcontroller" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-resetpasswordcontroller"></span>
+              <div class="node-title" style="font-size:10px;">ResetPasswordController</div>
+              <div class="node-sub">GET/POST /reset-password</div>
+            </div>
+            <div class="node" id="n-usercontroller" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-usercontroller"></span>
+              <div class="node-title" style="font-size:10px;">UserController</div>
+              <div class="node-sub">/users · /users/me</div>
+            </div>
+          </div>
+        </div>
+        <div class="section purple">
+          <span class="section-title">Controllers · Logs</span>
+          <div class="layer-row">
+            <div class="node" id="n-logcontroller">
+              <span class="step-badge" id="sb-logcontroller"></span>
+              <span class="node-icon">📋</span>
+              <div class="node-title">LogController</div>
+              <div class="node-sub">/api/v1/logs/summarize</div>
+              <span class="badge purple">Admin only</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR ARROWS -->
+    <div class="connector-row">
+      <div class="connector-cell"></div>
+      <div class="connector-cell purple"></div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="layer">
+      <div class="two-col">
+        <div class="section blue">
+          <span class="section-title">Services · User</span>
+          <div class="layer-row" style="gap:6px;">
+            <div class="node" id="n-userservice" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-userservice"></span>
+              <div class="node-title" style="font-size:10px;">UserService</div>
+              <div class="node-sub">CRUD · bcrypt</div>
+            </div>
+            <div class="node" id="n-emailverificationservice" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-emailverificationservice"></span>
+              <div class="node-title" style="font-size:10px;">EmailVerificationService</div>
+              <div class="node-sub">Token generation</div>
+            </div>
+            <div class="node" id="n-emailservice" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-emailservice"></span>
+              <div class="node-title" style="font-size:10px;">EmailService</div>
+              <div class="node-sub">SMTP send</div>
+            </div>
+            <div class="node" id="n-passwordresetservice" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-passwordresetservice"></span>
+              <div class="node-title" style="font-size:10px;">PasswordResetService</div>
+              <div class="node-sub">Token · reset flow</div>
+            </div>
+          </div>
+        </div>
+        <div class="section purple">
+          <span class="section-title">Services · Logs</span>
+          <div class="layer-row" style="gap:6px;">
+            <div class="node" id="n-logreaderservice" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-logreaderservice"></span>
+              <div class="node-title" style="font-size:10px;">LogReaderService</div>
+              <div class="node-sub">File reading</div>
+            </div>
+            <div class="node" id="n-logsanitizerservice" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-logsanitizerservice"></span>
+              <div class="node-title" style="font-size:10px;">LogSanitizerService</div>
+              <div class="node-sub">PII scrubbing</div>
+            </div>
+            <div class="node" id="n-logsummarizerservice" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-logsummarizerservice"></span>
+              <div class="node-title" style="font-size:10px;">LogSummarizerService</div>
+              <div class="node-sub">AI summarization</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;height:28px;position:relative;margin-top:4px;">
+            <svg viewBox="0 0 200 28" style="width:50%;height:100%;overflow:visible;">
+              <line x1="100" y1="0" x2="100" y2="24" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.4"/>
+              <polygon points="97,20 103,20 100,26" fill="#a78bfa" opacity="0.5"/>
+              <text x="108" y="14" fill="#a78bfa" font-size="8" font-family="JetBrains Mono" opacity="0.5">optional</text>
+            </svg>
+          </div>
+          <div class="layer-row">
+            <div class="node" id="n-openai" style="padding:8px 12px;">
+              <span class="step-badge" id="sb-openai"></span>
+              <span class="node-icon">🤖</span>
+              <div class="node-title">OpenAI API</div>
+              <div class="node-sub">GPT log summaries</div>
+              <span class="badge purple">External</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="connector-row">
+      <div class="connector-cell"></div>
+      <div class="connector-cell invisible"></div>
+    </div>
+
+    <!-- REPOSITORIES + CLEANUP -->
+    <div class="layer">
+      <div class="two-col">
+        <div class="section green">
+          <span class="section-title">Repositories</span>
+          <div class="layer-row" style="gap:6px;">
+            <div class="node" id="n-userrepo" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-userrepo"></span>
+              <div class="node-title" style="font-size:10px;">UserRepository</div>
+              <div class="node-sub">JPA · User entity</div>
+            </div>
+            <div class="node" id="n-emailtokenrepo" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-emailtokenrepo"></span>
+              <div class="node-title" style="font-size:10px;">EmailVerificationToken<br>Repository</div>
+              <div class="node-sub">Token store</div>
+            </div>
+            <div class="node" id="n-passwordtokenrepo" style="min-width:80px;padding:8px 10px;">
+              <span class="step-badge" id="sb-passwordtokenrepo"></span>
+              <div class="node-title" style="font-size:10px;">PasswordResetToken<br>Repository</div>
+              <div class="node-sub">Token store</div>
+            </div>
+          </div>
+        </div>
+        <div class="section orange">
+          <span class="section-title">Background Tasks</span>
+          <div class="layer-row">
+            <div class="node" id="n-tokencleanup">
+              <span class="step-badge" id="sb-tokencleanup"></span>
+              <span class="node-icon">⏰</span>
+              <div class="node-title">TokenCleanupService</div>
+              <div class="node-sub">@Scheduled<br>Expired token cleanup</div>
+              <span class="badge orange">Cron</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"></div>
+
+    <!-- DATABASE -->
+    <div class="layer">
+      <div class="layer-row">
+        <div class="node" id="n-db">
+          <span class="step-badge" id="sb-db"></span>
+          <span class="node-icon">🗄️</span>
+          <div class="node-title">PostgreSQL</div>
+          <div class="node-sub">prod · H2 for local dev</div>
+          <span class="badge green">Flyway migrations</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /diagram -->
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot blue"></div> User flow</div>
+    <div class="legend-item"><div class="legend-dot purple"></div> Log flow</div>
+    <div class="legend-item"><div class="legend-dot green"></div> Data layer</div>
+    <div class="legend-item"><div class="legend-dot orange"></div> Background / Security</div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// Flow definitions: each step = { nodes: [id,...], color, text }
+const flows = {
+  none: { color: 'none', steps: [] },
+
+  register: { color: 'blue', steps: [
+    { nodes: ['n-client'],                    text: '1 — User submits the registration form from the browser' },
+    { nodes: ['n-ratelimit'],                 text: '2 — RateLimitFilter checks the IP hasn\'t exceeded the request threshold' },
+    { nodes: ['n-security'],                  text: '3 — SecurityFilterChain allows /register through as a public endpoint' },
+    { nodes: ['n-registrationcontroller'],    text: '4 — RegistrationController receives POST /register, runs Bean Validation' },
+    { nodes: ['n-userservice'],               text: '5 — UserService checks for duplicate username and email, then creates the user with bcrypt-hashed password' },
+    { nodes: ['n-emailverificationservice'],  text: '6 — EmailVerificationService generates a unique verification token and saves it' },
+    { nodes: ['n-emailservice'],              text: '7 — EmailService sends the verification email with the token link' },
+    { nodes: ['n-emailtokenrepo'],            text: '8 — EmailVerificationTokenRepository persists the token' },
+    { nodes: ['n-userrepo'],                  text: '9 — UserRepository saves the new user (verified=false) to the database' },
+    { nodes: ['n-db'],                        text: '10 — PostgreSQL stores the user row and the email token row' },
+  ]},
+
+  login: { color: 'purple', steps: [
+    { nodes: ['n-client'],          text: '1 — User submits the login form' },
+    { nodes: ['n-ratelimit'],       text: '2 — RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],        text: '3 — SecurityFilterChain handles form login — loads UserDetailsService, checks password with BCrypt, checks user is not disabled (i.e. email verified)' },
+    { nodes: ['n-pagecontroller'],  text: '4 — On success, custom loginSuccessHandler redirects ADMIN → /admin, USER → /user via PageController routes' },
+    { nodes: ['n-userrepo'],        text: '5 — UserRepository.findByUsername() was called during authentication to load the user' },
+    { nodes: ['n-db'],              text: '6 — PostgreSQL returns the user record for credential verification' },
+  ]},
+
+  verify: { color: 'green', steps: [
+    { nodes: ['n-client'],                      text: '1 — User clicks the verification link in their email (GET /verify-email?token=...)' },
+    { nodes: ['n-ratelimit'],                   text: '2 — RateLimitFilter passes the request through' },
+    { nodes: ['n-security'],                    text: '3 — SecurityFilterChain allows /verify-email as a public endpoint' },
+    { nodes: ['n-emailverificationcontroller'], text: '4 — EmailVerificationController receives the token from the query param' },
+    { nodes: ['n-emailverificationservice'],    text: '5 — EmailVerificationService looks up the token, checks it\'s not expired, marks the user as verified=true' },
+    { nodes: ['n-emailtokenrepo'],              text: '6 — EmailVerificationTokenRepository finds and then deletes the used token' },
+    { nodes: ['n-userrepo'],                    text: '7 — UserRepository saves the updated user with verified=true' },
+    { nodes: ['n-db'],                          text: '8 — PostgreSQL persists the verified status. User can now log in.' },
+  ]},
+
+  forgot: { color: 'orange', steps: [
+    { nodes: ['n-client'],                   text: '1 — User submits the forgot-password form with username + email' },
+    { nodes: ['n-ratelimit'],                text: '2 — RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],                 text: '3 — SecurityFilterChain allows /forgot-password as a public endpoint' },
+    { nodes: ['n-forgotpasswordcontroller'], text: '4 — ForgotPasswordController receives POST /forgot-password' },
+    { nodes: ['n-userservice'],              text: '5 — UserService.findByUsernameAndEmail() validates the account exists' },
+    { nodes: ['n-passwordresetservice'],     text: '6 — PasswordResetService creates a reset token and saves it' },
+    { nodes: ['n-emailservice'],             text: '7 — EmailService sends the password reset email with the token link' },
+    { nodes: ['n-passwordtokenrepo'],        text: '8 — PasswordResetTokenRepository persists the reset token' },
+    { nodes: ['n-db'],                       text: '9 — PostgreSQL stores the password reset token row' },
+  ]},
+
+  reset: { color: 'pink', steps: [
+    { nodes: ['n-client'],                   text: '1 — User clicks the reset link from email, then submits new password' },
+    { nodes: ['n-ratelimit'],                text: '2 — RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],                 text: '3 — SecurityFilterChain allows /reset-password as public' },
+    { nodes: ['n-resetpasswordcontroller'],  text: '4 — ResetPasswordController receives POST /reset-password with token + new password' },
+    { nodes: ['n-passwordresetservice'],     text: '5 — PasswordResetService validates the token is valid and not expired, then resets the password' },
+    { nodes: ['n-userservice'],              text: '6 — UserService.updateWithPassword() bcrypt-encodes and saves the new password' },
+    { nodes: ['n-passwordtokenrepo'],        text: '7 — PasswordResetTokenRepository deletes the used token' },
+    { nodes: ['n-userrepo'],                 text: '8 — UserRepository saves the user with the new hashed password' },
+    { nodes: ['n-db'],                       text: '9 — PostgreSQL persists the updated password. User is redirected to login.' },
+  ]},
+
+  usercrud: { color: 'yellow', steps: [
+    { nodes: ['n-client'],         text: '1 — Admin or authenticated user makes a request to /users or /users/me' },
+    { nodes: ['n-ratelimit'],      text: '2 — RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],       text: '3 — SecurityFilterChain checks session authentication' },
+    { nodes: ['n-usercontroller'], text: '4 — UserController routes the request — admin endpoints use @PreAuthorize("hasRole(ADMIN)"), /me endpoints use @AuthenticationPrincipal' },
+    { nodes: ['n-userservice'],    text: '5 — UserService handles the operation: findAll, findById, create, updateWithPassword, or deleteById — with duplicate checks' },
+    { nodes: ['n-userrepo'],       text: '6 — UserRepository executes the JPA query against the database' },
+    { nodes: ['n-db'],             text: '7 — PostgreSQL returns or updates the user data. Response mapped to UserResponse DTO.' },
+  ]},
+
+  logsummary: { color: 'purple', steps: [
+    { nodes: ['n-client'],               text: '1 — Admin calls GET /api/v1/logs/summarize with optional filters (time range, log level, action type, userId)' },
+    { nodes: ['n-ratelimit'],            text: '2 — RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],             text: '3 — SecurityFilterChain verifies admin session' },
+    { nodes: ['n-logcontroller'],        text: '4 — LogController parses and validates query params, validates time range ordering' },
+    { nodes: ['n-logreaderservice'],     text: '5 — LogReaderService reads log entries from the filesystem within the time window' },
+    { nodes: ['n-logsanitizerservice'],  text: '6 — LogSanitizerService scrubs PII from the log entries before any further processing' },
+    { nodes: ['n-logsummarizerservice'], text: '7 — LogSummarizerService builds stats (counts, levels, action types) and optionally calls OpenAI' },
+    { nodes: ['n-openai'],               text: '8 — OpenAI API generates a human-readable summary of the sanitized log data (optional, if configured)' },
+  ]},
+};
+
+let currentFlow = 'none';
+let currentStep = -1;
+let allNodes = [];
+
+function getAllNodeIds() {
+  return Array.from(document.querySelectorAll('.node')).map(n => n.id).filter(Boolean);
+}
+
+function clearAll() {
+  getAllNodeIds().forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'node' + (el.className.includes('style') ? '' : '');
+    // preserve inline style
+    el.classList.remove('highlight-blue','highlight-purple','highlight-green','highlight-orange','highlight-pink','highlight-yellow');
+    const sb = el.querySelector('.step-badge');
+    if (sb) sb.textContent = '';
+  });
+  document.body.classList.remove('flow-active');
+  document.getElementById('stepDesc').classList.remove('active');
+  document.getElementById('stepNum').textContent = '—';
+  document.getElementById('stepText').textContent = 'Select a flow above to see it light up step by step';
+}
+
+function applyStep(flowKey, stepIdx) {
+  const flow = flows[flowKey];
+  if (!flow || flow.steps.length === 0) { clearAll(); return; }
+
+  document.body.classList.add('flow-active');
+
+  // Clear previous highlights
+  getAllNodeIds().forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('highlight-blue','highlight-purple','highlight-green','highlight-orange','highlight-pink','highlight-yellow');
+    const sb = el.querySelector('.step-badge');
+    if (sb) sb.textContent = '';
+  });
+
+  // Apply all steps up to and including current
+  for (let i = 0; i <= stepIdx; i++) {
+    const step = flow.steps[i];
+    step.nodes.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('highlight-' + flow.color);
+      const sb = el.querySelector('.step-badge');
+      if (sb) sb.textContent = i + 1;
+    });
+  }
+
+  // Update description
+  const step = flow.steps[stepIdx];
+  const desc = document.getElementById('stepDesc');
+  const num  = document.getElementById('stepNum');
+  const txt  = document.getElementById('stepText');
+  desc.classList.add('active');
+  num.textContent = stepIdx + 1;
+  txt.textContent = step.text;
+}
+
+function setFlow(flowKey) {
+  // Update buttons
+  document.querySelectorAll('.flow-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-flow="${flowKey}"]`).classList.add('active');
+
+  currentFlow = flowKey;
+  currentStep = -1;
+
+  if (flowKey === 'none') { clearAll(); return; }
+
+  // Start at step 0
+  currentStep = 0;
+  applyStep(flowKey, currentStep);
+}
+
+// Click on diagram nodes to advance step
+document.querySelectorAll('.node').forEach(node => {
+  node.addEventListener('click', () => {
+    if (currentFlow === 'none') return;
+    const flow = flows[currentFlow];
+    if (!flow || flow.steps.length === 0) return;
+    currentStep = Math.min(currentStep + 1, flow.steps.length - 1);
+    applyStep(currentFlow, currentStep);
+  });
+});
+
+// Flow buttons
+document.querySelectorAll('.flow-btn').forEach(btn => {
+  btn.addEventListener('click', () => setFlow(btn.dataset.flow));
+});
+
+// Keyboard: arrow keys to step through
+document.addEventListener('keydown', e => {
+  if (currentFlow === 'none') return;
+  const flow = flows[currentFlow];
+  if (!flow) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    currentStep = Math.min(currentStep + 1, flow.steps.length - 1);
+    applyStep(currentFlow, currentStep);
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    currentStep = Math.max(currentStep - 1, 0);
+    applyStep(currentFlow, currentStep);
+  }
+});
+
+// Initial state
+clearAll();
+</script>
+</body>
+</html>
