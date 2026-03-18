@@ -80,20 +80,25 @@
 
   /* STEP DESCRIPTION */
   .step-desc {
-    min-height: 44px;
-    margin-bottom: 24px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.02);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    min-height: 120px;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,13,20,0.95);
+    backdrop-filter: blur(8px);
     font-size: 12px;
     color: var(--muted);
-    transition: all 0.3s;
+    transition: border-color 0.3s, color 0.3s;
     display: flex;
     align-items: center;
     gap: 10px;
   }
-  .step-desc.active { border-color: var(--accent); color: var(--text); background: rgba(79,158,255,0.05); }
+  .step-desc.active { border-color: var(--accent); color: var(--text); }
+  .wrapper { padding-top: 72px; }
   .step-number {
     font-family: 'Syne', sans-serif;
     font-size: 18px;
@@ -265,8 +270,10 @@
 
   <!-- STEP DESCRIPTION -->
   <div class="step-desc" id="stepDesc">
+    <button id="btnPrev" onclick="stepNav(-1)" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 6px;line-height:1;transition:color 0.2s;flex-shrink:0;" title="Previous step">&#9664;</button>
     <span class="step-number" id="stepNum">—</span>
-    <span id="stepText">Select a flow above to see it light up step by step</span>
+    <span id="stepText" style="flex:1;">Select a flow below to see it light up step by step</span>
+    <button id="btnNext" onclick="stepNav(1)" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 6px;line-height:1;transition:color 0.2s;flex-shrink:0;" title="Next step">&#9654;</button>
   </div>
 
   <!-- DIAGRAM -->
@@ -625,7 +632,7 @@ function clearAll() {
   document.body.classList.remove('flow-active');
   document.getElementById('stepDesc').classList.remove('active');
   document.getElementById('stepNum').textContent = '—';
-  document.getElementById('stepText').textContent = 'Select a flow above to see it light up step by step';
+  document.getElementById('stepText').textContent = 'Select a flow below to see it light up step by step';
 }
 
 function applyStep(flowKey, stepIdx) {
@@ -655,6 +662,20 @@ function applyStep(flowKey, stepIdx) {
     });
   }
 
+  // Scroll to the current step's first node, or top if step 0
+  const currentNodes = flow.steps[stepIdx].nodes;
+  if (currentNodes.length === 0) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    const target = document.getElementById(currentNodes[0]);
+    if (target) {
+      const topBar = document.getElementById('stepDesc');
+      const offset = topBar ? topBar.offsetHeight + 80 : 140;
+      const targetTop = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top: targetTop, behavior: 'smooth' });
+    }
+  }
+
   // Update description
   const step = flow.steps[stepIdx];
   const desc = document.getElementById('stepDesc');
@@ -673,11 +694,12 @@ function setFlow(flowKey) {
   currentFlow = flowKey;
   currentStep = -1;
 
-  if (flowKey === 'none') { clearAll(); return; }
+  if (flowKey === 'none') { clearAll(); updateNavButtons(); return; }
 
   // Start at step 0
   currentStep = 0;
   applyStep(flowKey, currentStep);
+  updateNavButtons();
 }
 
 // Click on diagram nodes to advance step
@@ -688,6 +710,7 @@ document.querySelectorAll('.node').forEach(node => {
     if (!flow || flow.steps.length === 0) return;
     currentStep = Math.min(currentStep + 1, flow.steps.length - 1);
     applyStep(currentFlow, currentStep);
+    updateNavButtons();
   });
 });
 
@@ -695,6 +718,33 @@ document.querySelectorAll('.node').forEach(node => {
 document.querySelectorAll('.flow-btn').forEach(btn => {
   btn.addEventListener('click', () => setFlow(btn.dataset.flow));
 });
+
+// Step nav function for buttons
+function stepNav(dir) {
+  if (currentFlow === 'none') return;
+  const flow = flows[currentFlow];
+  if (!flow || flow.steps.length === 0) return;
+  if (dir === -1 && currentStep === 0) {
+    setFlow('none');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  currentStep = Math.min(Math.max(currentStep + dir, 0), flow.steps.length - 1);
+  applyStep(currentFlow, currentStep);
+  updateNavButtons();
+}
+
+function updateNavButtons() {
+  const prev = document.getElementById('btnPrev');
+  const next = document.getElementById('btnNext');
+  if (!prev || !next) return;
+  const flow = flows[currentFlow];
+  const total = flow && flow.steps.length ? flow.steps.length : 0;
+  prev.style.color = (currentFlow === 'none') ? 'var(--muted)' : 'var(--text)';
+  prev.style.opacity = (currentFlow === 'none') ? '0.3' : '1';
+  next.style.color = (currentFlow === 'none' || currentStep >= total - 1) ? 'var(--muted)' : 'var(--text)';
+  next.style.opacity = (currentFlow === 'none' || currentStep >= total - 1) ? '0.3' : '1';
+}
 
 // Keyboard: arrow keys to step through
 document.addEventListener('keydown', e => {
@@ -704,15 +754,39 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
     currentStep = Math.min(currentStep + 1, flow.steps.length - 1);
     applyStep(currentFlow, currentStep);
+    updateNavButtons();
   }
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-    currentStep = Math.max(currentStep - 1, 0);
-    applyStep(currentFlow, currentStep);
+    if (currentStep === 0) {
+      setFlow('none');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      currentStep = Math.max(currentStep - 1, 0);
+      applyStep(currentFlow, currentStep);
+      updateNavButtons();
+    }
   }
 });
 
 // Initial state
 clearAll();
 </script>
+<a href="../index.html" style="
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--node-border);
+  background: var(--node-bg);
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: color 0.2s, border-color 0.2s;
+  z-index: 100;
+">&#8592; profile</a>
+
 </body>
 </html>
