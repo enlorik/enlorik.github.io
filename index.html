@@ -49,7 +49,8 @@
     font-family: "Syne", sans-serif; font-size: clamp(40px, 8vw, 80px);
     font-weight: 800; line-height: 0.95; letter-spacing: -0.02em;
   }
-  .hero-name span { color: transparent; -webkit-text-stroke: 1px rgba(79,158,255,0.5); }
+  .hero-name .en { color: var(--text); }
+  .hero-name .lorik { color: transparent; -webkit-text-stroke: 1.5px rgba(79,158,255,0.7); }
   .hero-desc { margin-top: 20px; font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; }
   .hero-right { text-align: right; padding-bottom: 4px; }
   .hero-stat { font-family: "Syne", sans-serif; font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; line-height: 2; }
@@ -142,7 +143,7 @@
   <header class="hero">
     <div class="hero-left">
       <p class="eyebrow">Portfolio</p>
-      <h1 class="hero-name">enlo<span>rik</span></h1>
+      <h1 class="hero-name"><span class="en">en</span><span class="lorik">lorik</span></h1>
       <p class="hero-desc">Backend engineer. Spring Boot, Python, C++. Building production-shaped systems with clean architecture and a quiet attention to detail.</p>
       <nav class="hero-links">
         <a class="hero-link primary" href="https://github.com/enlorik" target="_blank">
