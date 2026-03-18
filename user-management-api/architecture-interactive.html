@@ -528,86 +528,110 @@
 </div><!-- /wrapper -->
 
 <script>
+
+// Smooth scroll — exponential lerp, never overshoots, chains across rapid clicks
+let _scrollRaf = null;
+let _scrollCurrent = window.scrollY;
+let _scrollTarget = window.scrollY;
+
+function smoothScrollTo(target) {
+  _scrollTarget = target;
+  if (_scrollRaf) return;
+  function step() {
+    const diff = _scrollTarget - _scrollCurrent;
+    if (Math.abs(diff) < 0.5) {
+      _scrollCurrent = _scrollTarget;
+      window.scrollTo(0, _scrollCurrent);
+      _scrollRaf = null;
+      return;
+    }
+    _scrollCurrent += diff * 0.1;
+    window.scrollTo(0, _scrollCurrent);
+    _scrollRaf = requestAnimationFrame(step);
+  }
+  _scrollRaf = requestAnimationFrame(step);
+}
+
 // Flow definitions: each step = { nodes: [id,...], color, text }
 const flows = {
   none: { color: 'none', steps: [] },
 
   register: { color: 'blue', steps: [
-    { nodes: ['n-client'],                    text: '1 — User submits the registration form from the browser' },
-    { nodes: ['n-ratelimit'],                 text: '2 — RateLimitFilter checks the IP hasn\'t exceeded the request threshold' },
-    { nodes: ['n-security'],                  text: '3 — SecurityFilterChain allows /register through as a public endpoint' },
-    { nodes: ['n-registrationcontroller'],    text: '4 — RegistrationController receives POST /register, runs Bean Validation' },
-    { nodes: ['n-userservice'],               text: '5 — UserService checks for duplicate username and email, then creates the user with bcrypt-hashed password' },
-    { nodes: ['n-emailverificationservice'],  text: '6 — EmailVerificationService generates a unique verification token and saves it' },
-    { nodes: ['n-emailservice'],              text: '7 — EmailService sends the verification email with the token link' },
-    { nodes: ['n-emailtokenrepo'],            text: '8 — EmailVerificationTokenRepository persists the token' },
-    { nodes: ['n-userrepo'],                  text: '9 — UserRepository saves the new user (verified=false) to the database' },
-    { nodes: ['n-db'],                        text: '10 — PostgreSQL stores the user row and the email token row' },
+    { nodes: ['n-client'],                    text: 'User submits the registration form from the browser' },
+    { nodes: ['n-ratelimit'],                 text: 'RateLimitFilter checks the IP hasn\'t exceeded the request threshold' },
+    { nodes: ['n-security'],                  text: 'SecurityFilterChain allows /register through as a public endpoint' },
+    { nodes: ['n-registrationcontroller'],    text: 'RegistrationController receives POST /register, runs Bean Validation' },
+    { nodes: ['n-userservice'],               text: 'UserService checks for duplicate username and email, then creates the user with bcrypt-hashed password' },
+    { nodes: ['n-emailverificationservice'],  text: 'EmailVerificationService generates a unique verification token and saves it' },
+    { nodes: ['n-emailservice'],              text: 'EmailService sends the verification email with the token link' },
+    { nodes: ['n-emailtokenrepo'],            text: 'EmailVerificationTokenRepository persists the token' },
+    { nodes: ['n-userrepo'],                  text: 'UserRepository saves the new user (verified=false) to the database' },
+    { nodes: ['n-db'],                        text: 'PostgreSQL stores the user row and the email token row' },
   ]},
 
   login: { color: 'purple', steps: [
-    { nodes: ['n-client'],          text: '1 — User submits the login form' },
-    { nodes: ['n-ratelimit'],       text: '2 — RateLimitFilter checks IP throttle' },
-    { nodes: ['n-security'],        text: '3 — SecurityFilterChain handles form login — loads UserDetailsService, checks password with BCrypt, checks user is not disabled (i.e. email verified)' },
-    { nodes: ['n-pagecontroller'],  text: '4 — On success, custom loginSuccessHandler redirects ADMIN → /admin, USER → /user via PageController routes' },
-    { nodes: ['n-userrepo'],        text: '5 — UserRepository.findByUsername() was called during authentication to load the user' },
-    { nodes: ['n-db'],              text: '6 — PostgreSQL returns the user record for credential verification' },
+    { nodes: ['n-client'],          text: 'User submits the login form' },
+    { nodes: ['n-ratelimit'],       text: 'RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],        text: 'SecurityFilterChain handles form login — loads UserDetailsService, checks password with BCrypt, checks user is not disabled (i.e. email verified)' },
+    { nodes: ['n-pagecontroller'],  text: 'On success, custom loginSuccessHandler redirects ADMIN → /admin, USER → /user via PageController routes' },
+    { nodes: ['n-userrepo'],        text: 'UserRepository.findByUsername() was called during authentication to load the user' },
+    { nodes: ['n-db'],              text: 'PostgreSQL returns the user record for credential verification' },
   ]},
 
   verify: { color: 'green', steps: [
-    { nodes: ['n-client'],                      text: '1 — User clicks the verification link in their email (GET /verify-email?token=...)' },
-    { nodes: ['n-ratelimit'],                   text: '2 — RateLimitFilter passes the request through' },
-    { nodes: ['n-security'],                    text: '3 — SecurityFilterChain allows /verify-email as a public endpoint' },
-    { nodes: ['n-emailverificationcontroller'], text: '4 — EmailVerificationController receives the token from the query param' },
-    { nodes: ['n-emailverificationservice'],    text: '5 — EmailVerificationService looks up the token, checks it\'s not expired, marks the user as verified=true' },
-    { nodes: ['n-emailtokenrepo'],              text: '6 — EmailVerificationTokenRepository finds and then deletes the used token' },
-    { nodes: ['n-userrepo'],                    text: '7 — UserRepository saves the updated user with verified=true' },
-    { nodes: ['n-db'],                          text: '8 — PostgreSQL persists the verified status. User can now log in.' },
+    { nodes: ['n-client'],                      text: 'User clicks the verification link in their email (GET /verify-email?token=...)' },
+    { nodes: ['n-ratelimit'],                   text: 'RateLimitFilter passes the request through' },
+    { nodes: ['n-security'],                    text: 'SecurityFilterChain allows /verify-email as a public endpoint' },
+    { nodes: ['n-emailverificationcontroller'], text: 'EmailVerificationController receives the token from the query param' },
+    { nodes: ['n-emailverificationservice'],    text: 'EmailVerificationService looks up the token, checks it\'s not expired, marks the user as verified=true' },
+    { nodes: ['n-emailtokenrepo'],              text: 'EmailVerificationTokenRepository finds and then deletes the used token' },
+    { nodes: ['n-userrepo'],                    text: 'UserRepository saves the updated user with verified=true' },
+    { nodes: ['n-db'],                          text: 'PostgreSQL persists the verified status. User can now log in.' },
   ]},
 
   forgot: { color: 'orange', steps: [
-    { nodes: ['n-client'],                   text: '1 — User submits the forgot-password form with username + email' },
-    { nodes: ['n-ratelimit'],                text: '2 — RateLimitFilter checks IP throttle' },
-    { nodes: ['n-security'],                 text: '3 — SecurityFilterChain allows /forgot-password as a public endpoint' },
-    { nodes: ['n-forgotpasswordcontroller'], text: '4 — ForgotPasswordController receives POST /forgot-password' },
-    { nodes: ['n-userservice'],              text: '5 — UserService.findByUsernameAndEmail() validates the account exists' },
-    { nodes: ['n-passwordresetservice'],     text: '6 — PasswordResetService creates a reset token and saves it' },
-    { nodes: ['n-emailservice'],             text: '7 — EmailService sends the password reset email with the token link' },
-    { nodes: ['n-passwordtokenrepo'],        text: '8 — PasswordResetTokenRepository persists the reset token' },
-    { nodes: ['n-db'],                       text: '9 — PostgreSQL stores the password reset token row' },
+    { nodes: ['n-client'],                   text: 'User submits the forgot-password form with username + email' },
+    { nodes: ['n-ratelimit'],                text: 'RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],                 text: 'SecurityFilterChain allows /forgot-password as a public endpoint' },
+    { nodes: ['n-forgotpasswordcontroller'], text: 'ForgotPasswordController receives POST /forgot-password' },
+    { nodes: ['n-userservice'],              text: 'UserService.findByUsernameAndEmail() validates the account exists' },
+    { nodes: ['n-passwordresetservice'],     text: 'PasswordResetService creates a reset token and saves it' },
+    { nodes: ['n-emailservice'],             text: 'EmailService sends the password reset email with the token link' },
+    { nodes: ['n-passwordtokenrepo'],        text: 'PasswordResetTokenRepository persists the reset token' },
+    { nodes: ['n-db'],                       text: 'PostgreSQL stores the password reset token row' },
   ]},
 
   reset: { color: 'pink', steps: [
-    { nodes: ['n-client'],                   text: '1 — User clicks the reset link from email, then submits new password' },
-    { nodes: ['n-ratelimit'],                text: '2 — RateLimitFilter checks IP throttle' },
-    { nodes: ['n-security'],                 text: '3 — SecurityFilterChain allows /reset-password as public' },
-    { nodes: ['n-resetpasswordcontroller'],  text: '4 — ResetPasswordController receives POST /reset-password with token + new password' },
-    { nodes: ['n-passwordresetservice'],     text: '5 — PasswordResetService validates the token is valid and not expired, then resets the password' },
-    { nodes: ['n-userservice'],              text: '6 — UserService.updateWithPassword() bcrypt-encodes and saves the new password' },
-    { nodes: ['n-passwordtokenrepo'],        text: '7 — PasswordResetTokenRepository deletes the used token' },
-    { nodes: ['n-userrepo'],                 text: '8 — UserRepository saves the user with the new hashed password' },
-    { nodes: ['n-db'],                       text: '9 — PostgreSQL persists the updated password. User is redirected to login.' },
+    { nodes: ['n-client'],                   text: 'User clicks the reset link from email, then submits new password' },
+    { nodes: ['n-ratelimit'],                text: 'RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],                 text: 'SecurityFilterChain allows /reset-password as public' },
+    { nodes: ['n-resetpasswordcontroller'],  text: 'ResetPasswordController receives POST /reset-password with token + new password' },
+    { nodes: ['n-passwordresetservice'],     text: 'PasswordResetService validates the token is valid and not expired, then resets the password' },
+    { nodes: ['n-userservice'],              text: 'UserService.updateWithPassword() bcrypt-encodes and saves the new password' },
+    { nodes: ['n-passwordtokenrepo'],        text: 'PasswordResetTokenRepository deletes the used token' },
+    { nodes: ['n-userrepo'],                 text: 'UserRepository saves the user with the new hashed password' },
+    { nodes: ['n-db'],                       text: 'PostgreSQL persists the updated password. User is redirected to login.' },
   ]},
 
   usercrud: { color: 'yellow', steps: [
-    { nodes: ['n-client'],         text: '1 — Admin or authenticated user makes a request to /users or /users/me' },
-    { nodes: ['n-ratelimit'],      text: '2 — RateLimitFilter checks IP throttle' },
-    { nodes: ['n-security'],       text: '3 — SecurityFilterChain checks session authentication' },
-    { nodes: ['n-usercontroller'], text: '4 — UserController routes the request — admin endpoints use @PreAuthorize("hasRole(ADMIN)"), /me endpoints use @AuthenticationPrincipal' },
-    { nodes: ['n-userservice'],    text: '5 — UserService handles the operation: findAll, findById, create, updateWithPassword, or deleteById — with duplicate checks' },
-    { nodes: ['n-userrepo'],       text: '6 — UserRepository executes the JPA query against the database' },
-    { nodes: ['n-db'],             text: '7 — PostgreSQL returns or updates the user data. Response mapped to UserResponse DTO.' },
+    { nodes: ['n-client'],         text: 'Admin or authenticated user makes a request to /users or /users/me' },
+    { nodes: ['n-ratelimit'],      text: 'RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],       text: 'SecurityFilterChain checks session authentication' },
+    { nodes: ['n-usercontroller'], text: 'UserController routes the request — admin endpoints use @PreAuthorize("hasRole(ADMIN)"), /me endpoints use @AuthenticationPrincipal' },
+    { nodes: ['n-userservice'],    text: 'UserService handles the operation: findAll, findById, create, updateWithPassword, or deleteById — with duplicate checks' },
+    { nodes: ['n-userrepo'],       text: 'UserRepository executes the JPA query against the database' },
+    { nodes: ['n-db'],             text: 'PostgreSQL returns or updates the user data. Response mapped to UserResponse DTO.' },
   ]},
 
   logsummary: { color: 'purple', steps: [
-    { nodes: ['n-client'],               text: '1 — Admin calls GET /api/v1/logs/summarize with optional filters (time range, log level, action type, userId)' },
-    { nodes: ['n-ratelimit'],            text: '2 — RateLimitFilter checks IP throttle' },
-    { nodes: ['n-security'],             text: '3 — SecurityFilterChain verifies admin session' },
-    { nodes: ['n-logcontroller'],        text: '4 — LogController parses and validates query params, validates time range ordering' },
-    { nodes: ['n-logreaderservice'],     text: '5 — LogReaderService reads log entries from the filesystem within the time window' },
-    { nodes: ['n-logsanitizerservice'],  text: '6 — LogSanitizerService scrubs PII from the log entries before any further processing' },
-    { nodes: ['n-logsummarizerservice'], text: '7 — LogSummarizerService builds stats (counts, levels, action types) and optionally calls OpenAI' },
-    { nodes: ['n-openai'],               text: '8 — OpenAI API generates a human-readable summary of the sanitized log data (optional, if configured)' },
+    { nodes: ['n-client'],               text: 'Admin calls GET /api/v1/logs/summarize with optional filters (time range, log level, action type, userId)' },
+    { nodes: ['n-ratelimit'],            text: 'RateLimitFilter checks IP throttle' },
+    { nodes: ['n-security'],             text: 'SecurityFilterChain verifies admin session' },
+    { nodes: ['n-logcontroller'],        text: 'LogController parses and validates query params, validates time range ordering' },
+    { nodes: ['n-logreaderservice'],     text: 'LogReaderService reads log entries from the filesystem within the time window' },
+    { nodes: ['n-logsanitizerservice'],  text: 'LogSanitizerService scrubs PII from the log entries before any further processing' },
+    { nodes: ['n-logsummarizerservice'], text: 'LogSummarizerService builds stats (counts, levels, action types) and optionally calls OpenAI' },
+    { nodes: ['n-openai'],               text: 'OpenAI API generates a human-readable summary of the sanitized log data (optional, if configured)' },
   ]},
 };
 
@@ -665,14 +689,14 @@ function applyStep(flowKey, stepIdx) {
   // Scroll to the current step's first node, or top if step 0
   const currentNodes = flow.steps[stepIdx].nodes;
   if (currentNodes.length === 0) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    smoothScrollTo(0);
   } else {
     const target = document.getElementById(currentNodes[0]);
     if (target) {
       const topBar = document.getElementById('stepDesc');
       const offset = topBar ? topBar.offsetHeight + 80 : 140;
       const targetTop = target.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top: targetTop, behavior: 'smooth' });
+      smoothScrollTo(targetTop);
     }
   }
 
@@ -726,7 +750,7 @@ function stepNav(dir) {
   if (!flow || flow.steps.length === 0) return;
   if (dir === -1 && currentStep === 0) {
     setFlow('none');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    smoothScrollTo(0);
     return;
   }
   currentStep = Math.min(Math.max(currentStep + dir, 0), flow.steps.length - 1);
@@ -759,7 +783,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
     if (currentStep === 0) {
       setFlow('none');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      smoothScrollTo(0);
     } else {
       currentStep = Math.max(currentStep - 1, 0);
       applyStep(currentFlow, currentStep);
