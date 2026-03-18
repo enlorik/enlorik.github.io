@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pearl-proof</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f0e8;
+    --ink: #1a1612;
+    --ink2: #3d3730;
+    --muted: #8c7f70;
+    --accent: #2d5a27;
+    --accent2: #8b2020;
+    --border: #d4c9b8;
+    --paper: #faf7f2;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Paper texture overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* HEADER */
+  header {
+    padding: 64px 0 48px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 56px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: center;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .icon-wrap {
+    width: 80px; height: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .icon-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+  .header-text { }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .tagline {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 480px;
+  }
+
+  .header-links {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 7px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    border: 1px solid;
+  }
+  .btn-primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn-primary:hover { background: var(--ink2); }
+  .btn-secondary { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn-secondary:hover { border-color: var(--ink); }
+
+  /* SECTION */
+  .section { margin-bottom: 56px; animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.2s; }
+  .section:nth-child(4) { animation-delay: 0.3s; }
+  .section:nth-child(5) { animation-delay: 0.4s; }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* PROOF DEMO */
+  .proof-block {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 24px 28px;
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .proof-line {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border);
+    transition: background 0.15s;
+  }
+  .proof-line:last-child { border-bottom: none; }
+  .proof-line:hover { background: rgba(45,90,39,0.04); margin: 0 -8px; padding: 4px 8px; border-radius: 3px; }
+
+  .proof-keyword { color: var(--muted); font-size: 11px; letter-spacing: 0.1em; min-width: 40px; }
+  .proof-expr { color: var(--ink2); flex: 1; }
+  .proof-eq { color: var(--muted); padding: 0 8px; }
+  .proof-result {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .proof-result.ok { background: rgba(45,90,39,0.12); color: var(--accent); border: 1px solid rgba(45,90,39,0.2); }
+  .proof-result.err { background: rgba(139,32,32,0.1); color: var(--accent2); border: 1px solid rgba(139,32,32,0.2); }
+
+  /* HOW IT WORKS */
+  .pipeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .pipeline-step {
+    padding: 20px 16px;
+    border-right: 1px solid var(--border);
+    position: relative;
+    background: var(--paper);
+    transition: background 0.2s;
+  }
+  .pipeline-step:last-child { border-right: none; }
+  .pipeline-step:hover { background: var(--bg); }
+
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .step-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .step-desc {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* FEATURES */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .feature {
+    background: var(--paper);
+    padding: 20px 24px;
+    transition: background 0.2s;
+  }
+  .feature:hover { background: var(--bg); }
+
+  .feature-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .feature-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* TECH STACK */
+  .stack {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag.primary { border-color: var(--accent); color: var(--accent); background: rgba(45,90,39,0.06); }
+
+  /* BUILD BLOCK */
+  .code-block {
+    background: var(--ink);
+    color: #a8d5a2;
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+  .code-block .comment { color: #5a6e57; }
+  .code-block .cmd { color: #d4c9b8; }
+
+  /* FOOTER */
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--ink); }
+
+  /* BACK BUTTON */
+  .back-btn {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    background: var(--paper);
+    padding: 8px 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    z-index: 100;
+  }
+  .back-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(16px);  } to { opacity:1; transform:translateY(0); } }
+
+  @media (max-width: 600px) {
+    header { grid-template-columns: 1fr; }
+    .pipeline { grid-template-columns: 1fr 1fr; }
+    .features { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="icon-wrap">
+      <img src="data:image/png;base64,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" alt="pearl-proof">
+    </div>
+    <div class="header-text">
+      <p class="eyebrow">C++17 · ANTLR4 · Math Verification</p>
+      <h1>pearl&#8209;<em>proof</em></h1>
+      <p class="tagline">A math-checker language that verifies algebraic equations by converting both sides to canonical polynomial form and checking their difference is zero.</p>
+      <div class="header-links">
+        <a class="btn btn-primary" href="https://github.com/enlorik/pearl-proof" target="_blank">View on GitHub</a>
+        <a class="btn btn-secondary" href="../index.html">&#8592; portfolio</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- LIVE DEMO -->
+  <div class="section">
+    <p class="section-label">The language in action</p>
+    <div class="proof-block">
+      <div class="proof-line">
+        <span class="proof-keyword">check</span>
+        <span class="proof-expr">1 + 1 <span class="proof-eq">=</span> 2</span>
+        <span class="proof-result ok">OK</span>
+      </div>
+      <div class="proof-line">
+        <span class="proof-keyword">check</span>
+        <span class="proof-expr">x + x <span class="proof-eq">=</span> 2 * x</span>
+        <span class="proof-result ok">OK</span>
+      </div>
+      <div class="proof-line">
+        <span class="proof-keyword">check</span>
+        <span class="proof-expr">(a + b)^2 <span class="proof-eq">=</span> a^2 + 2*a*b + b^2</span>
+        <span class="proof-result ok">OK</span>
+      </div>
+      <div class="proof-line">
+        <span class="proof-keyword">check</span>
+        <span class="proof-expr">(x + y) * (x - y) <span class="proof-eq">=</span> x^2 - y^2</span>
+        <span class="proof-result ok">OK</span>
+      </div>
+      <div class="proof-line">
+        <span class="proof-keyword">check</span>
+        <span class="proof-expr">x^3 <span class="proof-eq">=</span> x * x * x</span>
+        <span class="proof-result ok">OK</span>
+      </div>
+      <div class="proof-line">
+        <span class="proof-keyword">check</span>
+        <span class="proof-expr">(x + 1)^2 <span class="proof-eq">=</span> x^2 + 1</span>
+        <span class="proof-result err">ERROR</span>
+      </div>
+      <div class="proof-line">
+        <span class="proof-keyword">check</span>
+        <span class="proof-expr">2 + 2 <span class="proof-eq">=</span> 5</span>
+        <span class="proof-result err">ERROR</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section">
+    <p class="section-label">How it works</p>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">01</div>
+        <div class="step-name">Parse</div>
+        <div class="step-desc">ANTLR4 grammar tokenises and parses the .proof file into a parse tree</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">02</div>
+        <div class="step-name">AST</div>
+        <div class="step-desc">Visitor pattern walks the tree and builds a typed expression AST</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">03</div>
+        <div class="step-name">Expand</div>
+        <div class="step-desc">Both sides are converted to canonical polynomial form — a map of monomials to coefficients</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">04</div>
+        <div class="step-name">Verify</div>
+        <div class="step-desc">poly(A) − poly(B) is computed. If the result is the zero polynomial: OK. Otherwise: ERROR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="section">
+    <p class="section-label">What it supports</p>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-title">Operators</div>
+        <div class="feature-desc">Addition, subtraction, multiplication, integer division, and right-associative exponentiation</div>
+      </div>
+      <div class="feature">
+        <div class="feature-title">Expressions</div>
+        <div class="feature-desc">Integer constants, named variables, parenthesised grouping, and unary negation</div>
+      </div>
+      <div class="feature">
+        <div class="feature-title">Polynomial engine</div>
+        <div class="feature-desc">Full symbolic arithmetic — add, subtract, multiply, power — over multivariate polynomials with integer coefficients</div>
+      </div>
+      <div class="feature">
+        <div class="feature-title">Batch checking</div>
+        <div class="feature-desc">Checks every line in a .proof file and reports the line number of each OK or ERROR independently</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILD -->
+  <div class="section">
+    <p class="section-label">Build & run</p>
+    <div class="code-block">
+<span class="comment"># Prerequisites: CMake 3.10+, C++17 compiler, ANTLR4 C++ runtime, JRE</span>
+<span class="cmd">mkdir build && cd build</span>
+<span class="cmd">cmake ..</span>
+<span class="cmd">make</span>
+<span class="comment"># Run against a .proof file</span>
+<span class="cmd">./pearlproof test.proof</span>
+    </div>
+  </div>
+
+  <!-- STACK -->
+  <div class="section">
+    <p class="section-label">Stack</p>
+    <div class="stack">
+      <span class="tag primary">C++17</span>
+      <span class="tag primary">ANTLR4</span>
+      <span class="tag">CMake</span>
+      <span class="tag">Visitor Pattern</span>
+      <span class="tag">Polynomial Arithmetic</span>
+      <span class="tag">GitHub Actions CI</span>
+    </div>
+  </div>
+
+  <footer>
+    <span>pearl-proof &middot; <a href="https://github.com/enlorik/pearl-proof" target="_blank">github.com/enlorik/pearl-proof</a></span>
+    <a href="../index.html">&#8592; back to portfolio</a>
+  </footer>
+
+</div>
+
+<a class="back-btn" href="../index.html">&#8592; portfolio</a>
+
+</body>
+</html>
