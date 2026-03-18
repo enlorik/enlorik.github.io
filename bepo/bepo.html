@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bepo</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,900;1,400;1,700&family=Syne:wght@400;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0510;
+  --card: rgba(8,6,12,0.55);
+  --border: #2a1e14;
+  --ink: #f5f0e8;
+  --muted: #c0b0a0;
+  --sunset: #e8642a;
+  --gold: #c8922a;
+  --dusk: #7a4a8a;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NIGHT SKY — fixed background, only visible when scrolled past hero */
+.night-sky {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(circle, rgba(255,255,220,0.9) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.8) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.9) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.7) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.4) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.8) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.9) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.7) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.8) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.4) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.9) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.7) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.8) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.4) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.9) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.7) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.8) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.4) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.9) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,220,0.7) 1px, transparent 1px),
+    linear-gradient(to bottom, #1a0808 0%, #3a1208 8%, #5a2010 15%, #6a2818 22%, #4a1828 32%, #2a1040 45%, #1a0838 60%, #0e0628 80%, #0a0510 100%);
+  background-size:
+    2px 2px, 2px 2px, 2px 2px, 2px 2px, 2px 2px,
+    2px 2px, 2px 2px, 2px 2px, 2px 2px, 2px 2px,
+    2px 2px, 2px 2px, 2px 2px, 2px 2px, 2px 2px,
+    2px 2px, 2px 2px, 2px 2px, 2px 2px, 2px 2px,
+    2px 2px, 2px 2px, 2px 2px, 2px 2px, 2px 2px,
+    2px 2px, 2px 2px, 2px 2px, 2px 2px, 2px 2px,
+    100% 100%;
+  background-position:
+    7% 8%,  15% 22%, 23% 5%,  31% 35%, 42% 14%,
+    55% 45%, 63% 12%, 71% 58%, 80% 28%, 88% 72%,
+    12% 65%, 27% 48%, 38% 82%, 49% 31%, 58% 68%,
+    67% 55%, 76% 78%, 84% 42%, 91% 88%, 96% 62%,
+    3% 92%,  18% 75%, 33% 95%, 48% 85%, 62% 92%,
+    77% 98%, 88% 82%, 94% 95%, 50% 72%, 25% 88%,
+    0 0;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* MASTHEAD */
+.masthead {
+  position: relative; z-index: 10;
+  background: transparent;
+  border-bottom: 1px solid rgba(42,30,20,0.4);
+  padding: 20px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.masthead-left { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
+.masthead-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); }
+.masthead-right { font-size: 10px; letter-spacing: 0.15em; color: var(--muted); text-align: right; }
+
+/* HERO SPREAD */
+.spread {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 80vh;
+  position: relative; z-index: 2;
+}
+
+/* LEFT — city visual */
+.spread-visual {
+  position: relative;
+  overflow: hidden;
+  border-right: 1px solid rgba(42,30,20,0.4);
+  background: transparent;
+}
+.spread-sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 40% 70%, rgba(232,100,42,0.25) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 50%, rgba(200,146,42,0.15) 0%, transparent 45%),
+    radial-gradient(ellipse at 20% 40%, rgba(122,74,138,0.1) 0%, transparent 40%);
+}
+.spread-city {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 2;
+}
+.spread-bunny {
+  position: absolute;
+  bottom: 55%; left: 50%;
+  transform: translateX(-50%);
+  z-index: 3; text-align: center;
+  animation: float 5s ease-in-out infinite;
+}
+.spread-bunny img {
+  width: 130px; height: 130px;
+  object-fit: cover; border-radius: 18px;
+  filter: drop-shadow(0 0 30px rgba(232,100,42,0.25));
+}
+.spread-issue {
+  position: absolute; top: 40px; left: 40px;
+  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); writing-mode: vertical-rl; transform: rotate(180deg);
+  z-index: 4;
+}
+/* Fade from city into content */
+.spread-fade {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+  background: linear-gradient(to bottom, transparent 0%, #0a0510 100%);
+  z-index: 4; pointer-events: none;
+}
+
+/* RIGHT — text */
+.spread-text {
+  padding: 60px 52px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  background: rgba(6,4,12,0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: relative; z-index: 2;
+}
+.spread-kicker { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--sunset); margin-bottom: 20px; }
+.spread-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 4vw, 56px); font-weight: 900;
+  line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 24px;
+}
+.spread-headline em { font-style: italic; color: var(--sunset); }
+.spread-body {
+  font-size: 12px; color: #c8b8a8; line-height: 1.9;
+  border-top: 1px solid var(--border); padding-top: 20px;
+  margin-bottom: 32px; columns: 2; gap: 28px;
+}
+.spread-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  padding: 9px 18px; border-radius: 4px; text-decoration: none;
+  letter-spacing: 0.05em; transition: all 0.2s; border: 1px solid;
+}
+.btn-primary { background: var(--sunset); color: #0a0510; border-color: var(--sunset); font-weight: 600; }
+.btn-primary:hover { box-shadow: 0 0 24px rgba(232,100,42,0.4); }
+.btn-secondary { background: transparent; color: var(--muted); border-color: var(--border); }
+.btn-secondary:hover { color: var(--ink); border-color: var(--muted); }
+
+/* CONTENT */
+.content { max-width: 1040px; margin: 0 auto; padding: 80px 48px; position: relative; z-index: 1; }
+.section-label {
+  font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 24px; display: flex; align-items: center; gap: 16px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* MEMORIES */
+.memories {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;
+  margin-bottom: 64px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.mem {
+  background: rgba(8,6,14,0.5);
+  display: flex; flex-direction: column; transition: background 0.2s;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.mem:hover { background: rgba(20,12,8,0.65); }
+.mem-visual { width: 100%; aspect-ratio: 16/9; }
+.mem-visual.sunset { background: linear-gradient(160deg, #7a3010 0%, #e8642a 45%, #c8922a 70%, #1a0f08 100%); }
+.mem-visual.mountain { background: linear-gradient(180deg, #2a1428 0%, #4a3058 40%, #2a2018 70%, #0d0a08 100%); }
+.mem-visual.city { background: linear-gradient(180deg, #0d0814 0%, #1a1428 40%, #2a1808 80%, #0d0a08 100%); }
+.mem-body { padding: 16px; flex: 1; }
+.mem-note { font-size: 12px; color: var(--ink); line-height: 1.4; margin-bottom: 8px; }
+.mem-meta { font-size: 9px; color: var(--muted); letter-spacing: 0.05em; }
+.mem-score { margin: 0 16px 16px; display: flex; align-items: center; gap: 8px; }
+.mem-bar { flex: 1; height: 2px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.mem-fill { height: 100%; background: var(--sunset); border-radius: 99px; }
+.mem-pct { font-size: 9px; color: var(--sunset); }
+
+/* PIPELINE */
+.pipeline {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; margin-bottom: 64px;
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.pipe {
+  background: rgba(8,6,14,0.5);
+  padding: 28px 24px; transition: background 0.2s;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.pipe:hover { background: rgba(20,12,8,0.65); }
+.pipe-n { font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 900; color: #6a5a48; line-height: 1; margin-bottom: 14px; }
+.pipe-t { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 8px; }
+.pipe-d { font-size: 10px; color: #c0b0a0; line-height: 1.8; }
+
+/* API */
+.apis {
+  display: flex; flex-direction: column; gap: 1px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; overflow: hidden; margin-bottom: 64px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.api-row {
+  background: rgba(8,6,14,0.5);
+  padding: 18px 24px;
+  display: grid; grid-template-columns: 52px 140px 1fr;
+  align-items: start; gap: 20px; transition: background 0.2s;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.api-row:hover { background: rgba(20,12,8,0.65); }
+.method { font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 3px; letter-spacing: 0.1em; text-align: center; }
+.method.post { background: rgba(232,100,42,0.15); color: var(--sunset); border: 1px solid rgba(232,100,42,0.3); }
+.method.get  { background: rgba(200,146,42,0.12); color: var(--gold);   border: 1px solid rgba(200,146,42,0.3); }
+.api-path { font-size: 12px; color: var(--ink); }
+.api-desc { font-size: 11px; color: #c0b0a0; line-height: 1.6; }
+.api-params { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+.param { font-size: 9px; padding: 1px 7px; border-radius: 99px; border: 1px solid var(--border); color: #c0b0a0; }
+.param.req { border-color: rgba(232,100,42,0.3); color: var(--sunset); }
+
+/* STACK */
+.stack { display: flex; gap: 8px; flex-wrap: wrap; }
+.tag { font-size: 10px; padding: 4px 12px; border-radius: 3px; border: 1px solid var(--border); color: #c0b0a0; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.2s; cursor: default; }
+.tag:hover { border-color: var(--sunset); color: var(--sunset); }
+.tag.hi { border-color: rgba(232,100,42,0.35); color: var(--sunset); background: rgba(232,100,42,0.06); }
+
+/* FOOTER */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; color: #c0b0a0; letter-spacing: 0.05em;
+}
+footer a { color: #c0b0a0; text-decoration: none; transition: color 0.2s; }
+footer a:hover { color: var(--sunset); }
+
+.back-btn {
+  position: fixed; bottom: 24px; right: 24px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #c0b0a0; border: 1px solid var(--border);
+  background: var(--card); padding: 8px 14px; border-radius: 4px;
+  text-decoration: none; letter-spacing: 0.05em; transition: all 0.2s; z-index: 100;
+}
+.back-btn:hover { color: var(--sunset); border-color: var(--sunset); }
+
+@keyframes float { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-10px); } }
+
+@media (max-width: 700px) {
+  .masthead { padding: 16px 24px; }
+  .spread { grid-template-columns: 1fr; min-height: auto; }
+  .spread-visual { min-height: 340px; border-right: none; border-bottom: 1px solid var(--border); }
+  .spread-text { padding: 40px 24px; }
+  .spread-body { columns: 1; }
+  .memories { grid-template-columns: 1fr; }
+  .pipeline { grid-template-columns: 1fr 1fr; }
+  .api-row { grid-template-columns: 48px 1fr; }
+  footer { padding: 20px 24px; flex-direction: column; gap: 8px; }
+  .content { padding: 48px 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="night-sky"></div>
+
+<header class="masthead">
+  <span class="masthead-left">Vol. I &nbsp;·&nbsp; Memory Engine</span>
+  <span class="masthead-title">Bepo</span>
+  <span class="masthead-right">Local &nbsp;·&nbsp; Offline &nbsp;·&nbsp; Open</span>
+</header>
+
+<section class="spread">
+  <div class="spread-visual">
+    <div class="spread-sky"></div>
+
+    <!-- SVG CITY -->
+    <svg class="spread-city" viewBox="0 0 800 500" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+  <defs>
+    <radialGradient id="hg" cx="50%" cy="100%" r="80%">
+      <stop offset="0%" stop-color="#e8642a" stop-opacity="0.45"/>
+      <stop offset="70%" stop-color="#c8522a" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#e8642a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hg2" cx="25%" cy="100%" r="50%">
+      <stop offset="0%" stop-color="#c8922a" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#c8922a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- mask to cut holes in foreground buildings so stars show through -->
+    <mask id="holeMask">
+      <rect width="800" height="500" fill="white"/>
+      <!-- window holes — black = transparent -->
+      <rect x="42"  y="180" width="18" height="280" fill="black" rx="1"/>
+      <rect x="78"  y="120" width="14" height="340" fill="black" rx="1"/>
+      <rect x="175" y="100" width="16" height="360" fill="black" rx="1"/>
+      <rect x="242" y="140" width="20" height="320" fill="black" rx="1"/>
+      <rect x="318" y="80"  width="14" height="380" fill="black" rx="1"/>
+      <rect x="390" y="120" width="18" height="340" fill="black" rx="1"/>
+      <rect x="462" y="100" width="16" height="360" fill="black" rx="1"/>
+      <rect x="535" y="140" width="20" height="320" fill="black" rx="1"/>
+      <rect x="610" y="90"  width="14" height="370" fill="black" rx="1"/>
+      <rect x="680" y="130" width="18" height="330" fill="black" rx="1"/>
+      <rect x="748" y="100" width="16" height="360" fill="black" rx="1"/>
+    </mask>
+    <linearGradient id="ghostFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0a0510" stop-opacity="0.9"/>
+      <stop offset="50%"  stop-color="#0a0510" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0a0510" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#hg)"/>
+  <rect width="800" height="500" fill="url(#hg2)"/>
+
+  <!-- LAYER 1: Far background — very faint, hazy -->
+  <g opacity="0.35">
+    <rect x="0"   y="300" width="55"  height="200" fill="#1a1208"/>
+    <rect x="20"  y="260" width="25"  height="240" fill="#1a1208"/>
+    <rect x="55"  y="240" width="40"  height="260" fill="#1a1208"/>
+    <rect x="70"  y="220" width="16"  height="280" fill="#1a1208"/>
+    <rect x="105" y="250" width="50"  height="250" fill="#1a1208"/>
+    <rect x="130" y="210" width="20"  height="290" fill="#1a1208"/>
+    <rect x="160" y="190" width="35"  height="310" fill="#1a1208"/>
+    <rect x="185" y="240" width="30"  height="260" fill="#1a1208"/>
+    <rect x="220" y="200" width="55"  height="300" fill="#1a1208"/>
+    <rect x="238" y="175" width="20"  height="325" fill="#1a1208"/>
+    <rect x="270" y="220" width="40"  height="280" fill="#1a1208"/>
+    <rect x="310" y="180" width="25"  height="320" fill="#1a1208"/>
+    <rect x="340" y="195" width="55"  height="305" fill="#1a1208"/>
+    <rect x="360" y="160" width="20"  height="340" fill="#1a1208"/>
+    <rect x="400" y="210" width="45"  height="290" fill="#1a1208"/>
+    <rect x="445" y="175" width="30"  height="325" fill="#1a1208"/>
+    <rect x="475" y="195" width="55"  height="305" fill="#1a1208"/>
+    <rect x="500" y="155" width="18"  height="345" fill="#1a1208"/>
+    <rect x="530" y="215" width="40"  height="285" fill="#1a1208"/>
+    <rect x="570" y="180" width="28"  height="320" fill="#1a1208"/>
+    <rect x="600" y="165" width="58"  height="335" fill="#1a1208"/>
+    <rect x="625" y="140" width="18"  height="360" fill="#1a1208"/>
+    <rect x="658" y="200" width="42"  height="300" fill="#1a1208"/>
+    <rect x="700" y="170" width="30"  height="330" fill="#1a1208"/>
+    <rect x="730" y="185" width="55"  height="315" fill="#1a1208"/>
+    <rect x="752" y="150" width="20"  height="350" fill="#1a1208"/>
+    <rect x="775" y="205" width="25"  height="295" fill="#1a1208"/>
+  </g>
+
+  <!-- LAYER 2: Mid buildings with detail -->
+  <g opacity="0.75">
+    <!-- building + stepped + antenna definitions -->
+    <rect x="0"   y="280" width="50"  height="220" fill="#100d0a"/>
+    <rect x="15"  y="230" width="22"  height="270" fill="#130f0c"/>
+    <rect x="40"  y="200" width="42"  height="300" fill="#100d0a"/>
+    <rect x="50"  y="182" width="22"  height="18"  fill="#100d0a"/>
+    <rect x="56"  y="168" width="10"  height="14"  fill="#100d0a"/>
+    <rect x="57"  y="152" width="3"   height="16"  fill="#100d0a"/>
+    <rect x="85"  y="240" width="30"  height="260" fill="#130f0c"/>
+    <rect x="100" y="175" width="16"  height="305" fill="#100d0a"/>
+    <rect x="107" y="148" width="2"   height="27"  fill="#100d0a"/>
+    <rect x="118" y="215" width="50"  height="285" fill="#130f0c"/>
+    <rect x="155" y="170" width="26"  height="330" fill="#100d0a"/>
+    <polygon points="168,148 175,170 161,170" fill="#100d0a"/>
+    <rect x="185" y="235" width="24"  height="265" fill="#130f0c"/>
+    <rect x="208" y="185" width="58"  height="315" fill="#100d0a"/>
+    <rect x="218" y="162" width="38"  height="23"  fill="#100d0a"/>
+    <rect x="226" y="140" width="22"  height="22"  fill="#100d0a"/>
+    <rect x="233" y="120" width="8"   height="20"  fill="#100d0a"/>
+    <rect x="270" y="220" width="32"  height="280" fill="#130f0c"/>
+    <rect x="300" y="170" width="20"  height="330" fill="#100d0a"/>
+    <rect x="309" y="140" width="3"   height="30"  fill="#100d0a"/>
+    <rect x="310" y="128" width="1"   height="12"  fill="#100d0a"/>
+    <rect x="322" y="195" width="60"  height="305" fill="#130f0c"/>
+    <rect x="360" y="158" width="40"  height="342" fill="#100d0a"/>
+    <polygon points="378,135 386,158 370,158" fill="#100d0a"/>
+    <rect x="404" y="228" width="32"  height="272" fill="#130f0c"/>
+    <rect x="434" y="178" width="52"  height="322" fill="#100d0a"/>
+    <rect x="444" y="155" width="32"  height="23"  fill="#100d0a"/>
+    <rect x="452" y="132" width="16"  height="23"  fill="#100d0a"/>
+    <rect x="459" y="112" width="3"   height="20"  fill="#100d0a"/>
+    <rect x="490" y="220" width="30"  height="280" fill="#130f0c"/>
+    <rect x="520" y="175" width="48"  height="325" fill="#100d0a"/>
+    <rect x="542" y="145" width="4"   height="30"  fill="#100d0a"/>
+    <rect x="543" y="133" width="2"   height="12"  fill="#100d0a"/>
+    <rect x="572" y="208" width="36"  height="292" fill="#130f0c"/>
+    <rect x="608" y="162" width="55"  height="338" fill="#100d0a"/>
+    <polygon points="633,138 641,162 625,162" fill="#100d0a"/>
+    <rect x="665" y="235" width="28"  height="265" fill="#130f0c"/>
+    <rect x="692" y="170" width="48"  height="330" fill="#100d0a"/>
+    <rect x="702" y="148" width="28"  height="22"  fill="#100d0a"/>
+    <rect x="710" y="126" width="12"  height="22"  fill="#100d0a"/>
+    <rect x="745" y="215" width="30"  height="285" fill="#130f0c"/>
+    <rect x="773" y="168" width="27"  height="332" fill="#100d0a"/>
+    <rect x="783" y="140" width="3"   height="28"  fill="#100d0a"/>
+  </g>
+
+  <!-- LAYER 3: Foreground — solid silhouette with cutout gaps (stars show through gaps) -->
+  <g mask="url(#holeMask)">
+    <rect x="0"   y="310" width="48"  height="190" fill="#090807"/>
+    <rect x="18"  y="272" width="20"  height="228" fill="#0b0908"/>
+    <rect x="42"  y="245" width="44"  height="255" fill="#090807"/>
+    <rect x="52"  y="225" width="24"  height="20"  fill="#090807"/>
+    <rect x="58"  y="210" width="12"  height="15"  fill="#090807"/>
+    <rect x="59"  y="192" width="3"   height="18"  fill="#090807"/>
+    <rect x="88"  y="285" width="28"  height="215" fill="#0b0908"/>
+    <rect x="110" y="245" width="16"  height="255" fill="#090807"/>
+    <rect x="117" y="215" width="2"   height="30"  fill="#090807"/>
+    <rect x="126" y="258" width="55"  height="242" fill="#0b0908"/>
+    <rect x="172" y="215" width="28"  height="285" fill="#090807"/>
+    <polygon points="186,192 194,215 178,215" fill="#090807"/>
+    <rect x="200" y="275" width="22"  height="225" fill="#0b0908"/>
+    <rect x="222" y="228" width="62"  height="272" fill="#090807"/>
+    <rect x="232" y="205" width="42"  height="23"  fill="#090807"/>
+    <rect x="240" y="182" width="26"  height="23"  fill="#090807"/>
+    <rect x="247" y="160" width="12"  height="22"  fill="#090807"/>
+    <rect x="284" y="265" width="34"  height="235" fill="#0b0908"/>
+    <rect x="316" y="218" width="22"  height="282" fill="#090807"/>
+    <rect x="325" y="185" width="4"   height="33"  fill="#090807"/>
+    <rect x="326" y="172" width="2"   height="13"  fill="#090807"/>
+    <rect x="340" y="240" width="62"  height="260" fill="#0b0908"/>
+    <rect x="382" y="195" width="42"  height="305" fill="#090807"/>
+    <polygon points="401,170 410,195 392,195" fill="#090807"/>
+    <rect x="425" y="268" width="34"  height="232" fill="#0b0908"/>
+    <rect x="458" y="215" width="55"  height="285" fill="#090807"/>
+    <rect x="468" y="192" width="35"  height="23"  fill="#090807"/>
+    <rect x="476" y="168" width="19"  height="24"  fill="#090807"/>
+    <rect x="483" y="148" width="5"   height="20"  fill="#090807"/>
+    <rect x="514" y="262" width="32"  height="238" fill="#0b0908"/>
+    <rect x="545" y="212" width="50"  height="288" fill="#090807"/>
+    <rect x="568" y="180" width="4"   height="32"  fill="#090807"/>
+    <rect x="569" y="165" width="2"   height="15"  fill="#090807"/>
+    <rect x="598" y="248" width="36"  height="252" fill="#0b0908"/>
+    <rect x="632" y="198" width="58"  height="302" fill="#090807"/>
+    <polygon points="659,172 668,198 650,198" fill="#090807"/>
+    <rect x="692" y="272" width="30"  height="228" fill="#0b0908"/>
+    <rect x="720" y="215" width="50"  height="285" fill="#090807"/>
+    <rect x="730" y="192" width="30"  height="23"  fill="#090807"/>
+    <rect x="738" y="168" width="14"  height="24"  fill="#090807"/>
+    <rect x="757" y="252" width="32"  height="248" fill="#0b0908"/>
+    <rect x="786" y="205" width="14"  height="295" fill="#090807"/>
+  </g>
+
+  <!-- WINDOW LIGHTS -->
+  <rect x="22"  y="282" width="3" height="3" fill="#d4922a" opacity="0.9"/>
+  <rect x="30"  y="282" width="3" height="3" fill="#d4922a" opacity="0.6"/>
+  <rect x="22"  y="296" width="3" height="3" fill="#d4922a" opacity="0.7"/>
+  <rect x="55"  y="260" width="3" height="3" fill="#e8a030" opacity="0.8"/>
+  <rect x="65"  y="260" width="3" height="3" fill="#e8a030" opacity="0.6"/>
+  <rect x="75"  y="260" width="3" height="3" fill="#e8a030" opacity="0.9"/>
+  <rect x="55"  y="275" width="3" height="3" fill="#e8a030" opacity="0.5"/>
+  <rect x="75"  y="278" width="3" height="3" fill="#e8a030" opacity="0.7"/>
+  <rect x="130" y="265" width="3" height="3" fill="#d4922a" opacity="0.8"/>
+  <rect x="140" y="265" width="3" height="3" fill="#d4922a" opacity="0.6"/>
+  <rect x="150" y="265" width="3" height="3" fill="#d4922a" opacity="0.9"/>
+  <rect x="130" y="280" width="3" height="3" fill="#d4922a" opacity="0.5"/>
+  <rect x="150" y="283" width="3" height="3" fill="#d4922a" opacity="0.7"/>
+  <rect x="178" y="225" width="3" height="3" fill="#e8a030" opacity="0.8"/>
+  <rect x="188" y="225" width="3" height="3" fill="#e8a030" opacity="0.6"/>
+  <rect x="178" y="240" width="3" height="3" fill="#e8a030" opacity="0.9"/>
+  <rect x="228" y="238" width="3" height="3" fill="#d4922a" opacity="0.7"/>
+  <rect x="238" y="238" width="3" height="3" fill="#d4922a" opacity="0.9"/>
+  <rect x="248" y="238" width="3" height="3" fill="#d4922a" opacity="0.5"/>
+  <rect x="258" y="238" width="3" height="3" fill="#d4922a" opacity="0.8"/>
+  <rect x="228" y="254" width="3" height="3" fill="#d4922a" opacity="0.6"/>
+  <rect x="248" y="256" width="3" height="3" fill="#d4922a" opacity="0.7"/>
+  <rect x="268" y="254" width="3" height="3" fill="#d4922a" opacity="0.4"/>
+  <rect x="228" y="270" width="3" height="3" fill="#d4922a" opacity="0.5"/>
+  <rect x="258" y="272" width="3" height="3" fill="#d4922a" opacity="0.8"/>
+  <rect x="325" y="228" width="3" height="3" fill="#e8a030" opacity="0.9"/>
+  <rect x="335" y="228" width="3" height="3" fill="#e8a030" opacity="0.6"/>
+  <rect x="345" y="228" width="3" height="3" fill="#e8a030" opacity="0.8"/>
+  <rect x="355" y="228" width="3" height="3" fill="#e8a030" opacity="0.5"/>
+  <rect x="325" y="244" width="3" height="3" fill="#e8a030" opacity="0.7"/>
+  <rect x="345" y="246" width="3" height="3" fill="#e8a030" opacity="0.9"/>
+  <rect x="365" y="244" width="3" height="3" fill="#e8a030" opacity="0.4"/>
+  <rect x="468" y="225" width="3" height="3" fill="#d4922a" opacity="0.8"/>
+  <rect x="478" y="225" width="3" height="3" fill="#d4922a" opacity="0.6"/>
+  <rect x="488" y="225" width="3" height="3" fill="#d4922a" opacity="0.9"/>
+  <rect x="498" y="225" width="3" height="3" fill="#d4922a" opacity="0.5"/>
+  <rect x="468" y="241" width="3" height="3" fill="#d4922a" opacity="0.7"/>
+  <rect x="488" y="243" width="3" height="3" fill="#d4922a" opacity="0.8"/>
+  <rect x="550" y="222" width="3" height="3" fill="#e8a030" opacity="0.9"/>
+  <rect x="560" y="222" width="3" height="3" fill="#e8a030" opacity="0.6"/>
+  <rect x="570" y="222" width="3" height="3" fill="#e8a030" opacity="0.7"/>
+  <rect x="550" y="238" width="3" height="3" fill="#e8a030" opacity="0.5"/>
+  <rect x="570" y="240" width="3" height="3" fill="#e8a030" opacity="0.8"/>
+  <rect x="638" y="210" width="3" height="3" fill="#d4922a" opacity="0.9"/>
+  <rect x="648" y="210" width="3" height="3" fill="#d4922a" opacity="0.7"/>
+  <rect x="658" y="210" width="3" height="3" fill="#d4922a" opacity="0.5"/>
+  <rect x="668" y="210" width="3" height="3" fill="#d4922a" opacity="0.8"/>
+  <rect x="638" y="226" width="3" height="3" fill="#d4922a" opacity="0.6"/>
+  <rect x="658" y="228" width="3" height="3" fill="#d4922a" opacity="0.9"/>
+  <rect x="678" y="226" width="3" height="3" fill="#d4922a" opacity="0.4"/>
+  <rect x="726" y="225" width="3" height="3" fill="#e8a030" opacity="0.8"/>
+  <rect x="736" y="225" width="3" height="3" fill="#e8a030" opacity="0.6"/>
+  <rect x="746" y="225" width="3" height="3" fill="#e8a030" opacity="0.9"/>
+  <rect x="726" y="241" width="3" height="3" fill="#e8a030" opacity="0.5"/>
+  <rect x="746" y="243" width="3" height="3" fill="#e8a030" opacity="0.7"/>
+
+  <!-- fade bottom to blend -->
+  <rect x="0" y="380" width="800" height="120" fill="url(#ghostFade)"/>
+
+  <!-- Ground line -->
+  <rect x="0" y="493" width="800" height="7" fill="#070605"/>
+</svg>
+
+<!-- CUTOUT BUILDINGS: absolutely positioned divs on top of SVG, truly transparent -->
+<!-- They are transparent so the .night-sky fixed background shows through -->
+<div style="position:absolute;bottom:0;left:0;right:0;height:45%;pointer-events:none;overflow:hidden;">
+  <div style="position:absolute;bottom:0;left:0;right:0;height:100%;display:flex;align-items:flex-end;gap:2px;padding:0 2px;">
+    <div style="width:52px;height:22%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:18px;height:30%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:40px;height:25%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:16px;height:35%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:44px;height:20%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:20px;height:28%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:50px;height:22%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:22px;height:32%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:38px;height:19%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:18px;height:26%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:55px;height:23%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:24px;height:30%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:30px;height:20%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:20px;height:27%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:52px;height:23%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:22px;height:31%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:38px;height:20%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:18px;height:26%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:48px;height:22%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:24px;height:28%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:35px;height:21%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:20px;height:27%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:52px;height:23%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:22px;height:30%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:38px;height:20%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:18px;height:26%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:54px;height:22%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+    <div style="width:30px;height:30%;background:transparent;border-top:2px solid rgba(232,100,42,0.3);border-left:2px solid rgba(232,100,42,0.2);border-right:2px solid rgba(232,100,42,0.2);flex-shrink:0;"></div>
+  </div>
+</div>
+</svg>
+
+    <span class="spread-issue">Memory · Storage · Search</span>
+    <div class="spread-bunny">
+      <img src="data:image/jpeg;base64,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" alt="Bepo">
+    </div>
+    <div class="spread-fade"></div>
+  </div>
+
+  <div class="spread-text">
+    <div>
+      <p class="spread-kicker">Python · FastAPI · CLIP · SQLite</p>
+      <h1 class="spread-headline">
+        The city<br>
+        <em>remembers</em><br>
+        everything.
+      </h1>
+      <p class="spread-body">
+        Upload a photo with a note and GPS. Bepo encodes it using OpenAI's CLIP model — the same embedding space where "sunset" and a photograph of one end up close together. Store as many memories as you like. Later, type anything natural and Bepo finds the closest match using cosine similarity. Everything runs locally. No cloud. No accounts. Just you and your memories.
+      </p>
+      <div class="spread-links">
+        <a class="btn btn-primary" href="https://github.com/enlorik/Bepo" target="_blank">View on GitHub</a>
+        <a class="btn btn-secondary" href="../index.html">&#8592; portfolio</a>
+      </div>
+    </div>
+    <div style="margin-top:40px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:32px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Model</div>
+        <div style="font-size:12px;color:var(--ink);">CLIP vit-base-patch32</div>
+      </div>
+      <div>
+        <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Dims</div>
+        <div style="font-size:12px;color:var(--ink);">512-d vectors</div>
+      </div>
+      <div>
+        <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Storage</div>
+        <div style="font-size:12px;color:var(--ink);">SQLite · local</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="content">
+
+  <p class="section-label">Stored memories</p>
+  <div class="memories">
+    <div class="mem">
+      <div class="mem-visual sunset"></div>
+      <div class="mem-body">
+        <div class="mem-note">Beautiful sunset at the beach</div>
+        <div class="mem-meta">34.0522°N · 118.2437°W · Los Angeles</div>
+      </div>
+      <div class="mem-score"><div class="mem-bar"><div class="mem-fill" style="width:87%"></div></div><span class="mem-pct">0.87</span></div>
+    </div>
+    <div class="mem">
+      <div class="mem-visual mountain"></div>
+      <div class="mem-body">
+        <div class="mem-note">Snowy mountain peaks in winter</div>
+        <div class="mem-meta">45.8325°N · 6.8652°E · Mont Blanc</div>
+      </div>
+      <div class="mem-score"><div class="mem-bar"><div class="mem-fill" style="width:79%"></div></div><span class="mem-pct">0.79</span></div>
+    </div>
+    <div class="mem">
+      <div class="mem-visual city"></div>
+      <div class="mem-body">
+        <div class="mem-note">City skyline at night with lights</div>
+        <div class="mem-meta">40.7128°N · 74.0060°W · New York</div>
+      </div>
+      <div class="mem-score"><div class="mem-bar"><div class="mem-fill" style="width:82%"></div></div><span class="mem-pct">0.82</span></div>
+    </div>
+  </div>
+
+  <p class="section-label">How it works</p>
+  <div class="pipeline">
+    <div class="pipe">
+      <div class="pipe-n">01</div>
+      <div class="pipe-t">Upload</div>
+      <div class="pipe-d">Photo + optional note + GPS sent to POST /memory. Image saved to local filesystem with a timestamp filename.</div>
+    </div>
+    <div class="pipe">
+      <div class="pipe-n">02</div>
+      <div class="pipe-t">Embed</div>
+      <div class="pipe-d">CLIP encodes both the image and the text note into 512-dimensional vectors in a shared semantic space.</div>
+    </div>
+    <div class="pipe">
+      <div class="pipe-n">03</div>
+      <div class="pipe-t">Store</div>
+      <div class="pipe-d">Embeddings serialised as BLOBs in SQLite alongside timestamp, GPS coordinates, and image path.</div>
+    </div>
+    <div class="pipe">
+      <div class="pipe-n">04</div>
+      <div class="pipe-t">Retrieve</div>
+      <div class="pipe-d">Query encoded with CLIP. Cosine similarity computed against all stored embeddings. Best match returned with score.</div>
+    </div>
+  </div>
+
+  <p class="section-label">API endpoints</p>
+  <div class="apis">
+    <div class="api-row">
+      <span class="method post">POST</span>
+      <span class="api-path">/memory</span>
+      <div>
+        <div class="api-desc">Store a new memory. Generates CLIP embeddings for the image and text note, persists to SQLite with GPS.</div>
+        <div class="api-params">
+          <span class="param req">photo · required</span>
+          <span class="param">note · optional</span>
+          <span class="param">lat · optional</span>
+          <span class="param">lon · optional</span>
+        </div>
+      </div>
+    </div>
+    <div class="api-row">
+      <span class="method post">POST</span>
+      <span class="api-path">/search</span>
+      <div>
+        <div class="api-desc">Search by natural language. Encodes query with CLIP, computes cosine similarity against all stored embeddings, returns best match.</div>
+        <div class="api-params"><span class="param req">query · required</span></div>
+      </div>
+    </div>
+    <div class="api-row">
+      <span class="method get">GET</span>
+      <span class="api-path">/</span>
+      <div class="api-desc">Returns API info and available endpoints.</div>
+    </div>
+  </div>
+
+  <p class="section-label">Stack</p>
+  <div class="stack">
+    <span class="tag hi">Python</span>
+    <span class="tag hi">FastAPI</span>
+    <span class="tag hi">CLIP vit-base-patch32</span>
+    <span class="tag hi">PyTorch</span>
+    <span class="tag">SQLite</span>
+    <span class="tag">NumPy</span>
+    <span class="tag">Pillow</span>
+    <span class="tag">Uvicorn</span>
+  </div>
+
+</div>
+
+<footer>
+  <span>Bepo &nbsp;·&nbsp; <a href="https://github.com/enlorik/Bepo" target="_blank">github.com/enlorik/Bepo</a></span>
+  <a href="../index.html">&#8592; back to portfolio</a>
+</footer>
+
+<a class="back-btn" href="../index.html">&#8592; portfolio</a>
+
+</body>
+</html>
