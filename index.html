@@ -148,9 +148,17 @@
   @keyframes fadeUp   { from { opacity: 0; transform: translateY(20px);  } to { opacity: 1; transform: translateY(0); } }
 
   @media (max-width: 600px) {
-    .hero { grid-template-columns: 1fr; padding: 48px 0 40px; }
+    .hero { grid-template-columns: 1fr; padding: 32px 0 28px; }
     .hero-right { text-align: left; }
+    .hero-name { font-size: 44px !important; }
+    .hero-desc { font-size: 12px; max-width: 100%; }
+    .hero-stat strong { font-size: 22px; }
+    .hero-stat { font-size: 10px; }
+    .hero img[alt="otter"] { height: 120px !important; }
     .projects { grid-template-columns: 1fr; }
+    .card-name { font-size: 16px; }
+    .page { padding: 0 16px 60px; }
+    .section-header { margin: 32px 0 14px; }
     footer { flex-direction: column; gap: 8px; text-align: center; }
   }
   @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
