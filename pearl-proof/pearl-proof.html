@@ -313,6 +313,71 @@
   @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
   @keyframes fadeUp   { from { opacity:0; transform:translateY(16px);  } to { opacity:1; transform:translateY(0); } }
 
+  /* PLAYGROUND */
+  .pill-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 14px 10px 24px;
+    gap: 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .pill-wrap:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(45,90,39,0.12);
+  }
+
+  .proof-pill {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    resize: none;
+    height: 1.5em;
+    line-height: 1.5;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .proof-pill::placeholder { color: var(--muted); }
+
+  .pill-run-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 3px 6px;
+    border-radius: 99px;
+    transition: color 0.15s, background 0.15s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pill-run-btn:hover { color: var(--accent); background: rgba(45,90,39,0.08); }
+
+  .playground-output {
+    display: none;
+    background: var(--ink);
+    color: #a8d5a2;
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    overflow-wrap: break-word;
+  }
+  .playground-output.visible { display: block; }
+  .playground-output.running { color: var(--muted); }
+
   @media (max-width: 600px) {
     header { grid-template-columns: 1fr; }
     .pipeline { grid-template-columns: 1fr; }
@@ -324,6 +389,7 @@
     .tag { font-size: 9px; padding: 3px 8px; }
     pre, code { font-size: 11px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
     .stack { flex-wrap: wrap; }
+    .pill-wrap { padding: 8px 10px 8px 18px; }
   }
 </style>
 </head>
@@ -344,6 +410,16 @@
       </div>
     </div>
   </header>
+
+  <!-- PLAYGROUND -->
+  <div class="section">
+    <p class="section-label">Try it</p>
+    <div class="pill-wrap">
+      <textarea id="proof-input" class="proof-pill" placeholder="check (a + b)^2 = a^2 + 2*a*b + b^2" rows="1" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+      <button id="run-btn" class="pill-run-btn" title="Run (Enter)">&#9654;</button>
+    </div>
+    <pre id="proof-output" class="playground-output"></pre>
+  </div>
 
   <!-- LIVE DEMO -->
   <div class="section">
@@ -460,6 +536,7 @@
       <span class="tag">Visitor Pattern</span>
       <span class="tag">Polynomial Arithmetic</span>
       <span class="tag">GitHub Actions CI</span>
+      <span class="tag">Node.js · Express</span>
     </div>
   </div>
 
@@ -469,5 +546,54 @@
 
 <a class="back-btn" href="../index.html">&#8592; portfolio</a>
 
+<script>
+  (function () {
+    var input  = document.getElementById('proof-input');
+    var runBtn = document.getElementById('run-btn');
+    var output = document.getElementById('proof-output');
+
+    function autoResize() {
+      input.style.height = '1.5em';
+      input.style.height = input.scrollHeight + 'px';
+    }
+
+    input.addEventListener('input', autoResize);
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        runProof();
+      }
+    });
+
+    runBtn.addEventListener('click', runProof);
+
+    async function runProof() {
+      var code = input.value.trim();
+      if (!code) return;
+
+      output.textContent = 'running…';
+      output.className = 'playground-output visible running';
+
+      try {
+        var res = await fetch('https://pearl-proof-production.up.railway.app/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: code })
+        });
+        var data = await res.json();
+        if (!res.ok) {
+          output.textContent = data.error || ('Server error: ' + res.status);
+        } else {
+          output.textContent = data.output !== undefined ? data.output : (data.error || 'No output.');
+        }
+        output.className = 'playground-output visible';
+      } catch (err) {
+        output.textContent = 'Error: could not reach server.';
+        output.className = 'playground-output visible';
+      }
+    }
+  })();
+</script>
 </body>
 </html>
