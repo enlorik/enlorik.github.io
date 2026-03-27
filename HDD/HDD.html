@@ -1,550 +1,261 @@
 <!DOCTYPE html>
 
-<html lang="en" style="background:#0a0a0a;background-color:#0a0a0a;">
+<html style="background:#000">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="dark" />
-  <style>html,body{background:#0a0a0a!important;background-color:#0a0a0a!important;color:#f0f0f0!important;}</style>
-  <title>HDD — Competitive Programming Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>HDD</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+html,body{background:#000!important;color:#fff;margin:0;padding:0;font-family:'IBM Plex Mono',monospace;overflow-x:hidden}
 
-```
-:root {
-  --yellow:     #f4ff3a;
-  --yellow-dim: rgba(244,255,58,0.12);
-  --yellow-glow:rgba(244,255,58,0.45);
-  --cf:         #4a9eff;
-  --ioi:        #ff6b3d;
-  --icpc:       #9c4aff;
-  --bg:         #0a0a0a;
-  --surface:    #111;
-  --border:     #2a2a2a;
-  --text:       #f0f0f0;
-  --muted:      #999;
-}
+.page{max-width:900px;margin:0 auto;padding:0 24px 120px}
 
-html, body {
-  background: #0a0a0a;
-  color: #f0f0f0;
-  min-height: 100vh;
-}
+/* NAV */
+nav{background:#000;border-bottom:2px solid #fff;padding:0 24px;position:sticky;top:0;z-index:99}
+.nav-in{max-width:900px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:‘Syne’,sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:.1em}
+.nav-tag{font-size:10px;letter-spacing:.2em;color:#888;text-transform:uppercase}
 
-body {
-  font-family: 'Barlow Condensed', sans-serif;
-  overflow-x: hidden;
-}
+/* HERO */
+.hero{padding:80px 0 64px;border-bottom:1px solid #222}
+.h-eyebrow{font-size:10px;letter-spacing:.3em;color:#888;text-transform:uppercase;margin-bottom:24px}
+.h-title{font-family:‘Syne’,sans-serif;font-size:clamp(72px,12vw,120px);font-weight:800;line-height:.9;color:#fff;margin-bottom:32px;letter-spacing:-.02em}
+.h-title .acc{color:#000;background:#fff;padding:0 8px}
+.h-desc{font-size:15px;line-height:1.8;color:#aaa;max-width:480px;margin-bottom:48px}
+.h-btns{display:flex;gap:16px;flex-wrap:wrap}
 
-/* ── NAV ── */
-header {
-  background: rgba(10,10,10,0.95);
-  border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 100;
-  backdrop-filter: blur(12px);
-}
-.header-inner {
-  max-width: 1100px; margin: 0 auto;
-  padding: 0 24px;
-  display: flex; align-items: center;
-  height: 52px;
-}
-.logo {
-  font-family: 'Orbitron', monospace;
-  font-size: 20px; font-weight: 900;
-  color: var(--yellow);
-  letter-spacing: 4px;
-  text-shadow: 0 0 20px var(--yellow-glow);
-}
+.btn-a{display:inline-block;font-family:‘IBM Plex Mono’,monospace;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#fff;color:#000;padding:14px 32px;border:2px solid #fff}
+.btn-a:hover{background:#000;color:#fff}
 
-/* ── PAGE ── */
-.page { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+.btn-b{display:inline-block;font-family:‘IBM Plex Mono’,monospace;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#000;color:#fff;padding:14px 32px;border:2px solid #fff;transition:background .15s,color .15s}
+.btn-b:hover{background:#fff;color:#000}
 
-/* ── HERO ── */
-.hero {
-  padding: 64px 0 56px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
-  align-items: center;
-}
+/* TERMINAL */
+.term{background:#111;border:1px solid #333;margin-top:64px}
+.term-bar{background:#222;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #333}
+.d{width:10px;height:10px;border-radius:50%}
+.dr{background:#ff5f57}.dy{background:#febc2e}.dg{background:#28c840}
+.term-label{font-size:11px;color:#555;margin-left:8px}
+.term-body{padding:20px;font-size:13px;line-height:2}
+.tc{color:#888}
+.tp{color:#fff}
+.tok{color:#28c840}
+.tdim{color:#555}
+.tbl{color:#4a9eff}
+.tor{color:#ff6b3d}
+.tpu{color:#c084fc}
+.tbg{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tcf{background:rgba(74,158,255,.2);color:#4a9eff}
+.tioi{background:rgba(255,107,61,.2);color:#ff6b3d}
+.ticpc{background:rgba(192,132,252,.2);color:#c084fc}
+.cur{display:inline-block;width:8px;height:14px;background:#fff;vertical-align:middle;animation:bl 1s step-end infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
 
-.hero-eyebrow {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px; letter-spacing: 0.3em;
-  color: var(--yellow);
-  margin-bottom: 16px;
-}
+/* SECTIONS */
+.sec{border-top:1px solid #222;padding:64px 0}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:40px}
+.sec-n{font-size:11px;color:#555;letter-spacing:.2em}
+.sec-t{font-family:‘Syne’,sans-serif;font-size:28px;font-weight:800;color:#fff}
 
-h1 {
-  font-family: 'Orbitron', monospace;
-  font-size: clamp(36px, 5vw, 56px);
-  font-weight: 900; line-height: 1.0;
-  color: var(--yellow);
-  text-shadow: 0 0 40px rgba(244,255,58,0.2);
-  margin-bottom: 12px;
-}
+/* FEATURES — numbered list */
+.feat-list{display:flex;flex-direction:column;gap:0}
+.feat-item{display:grid;grid-template-columns:64px 1fr;gap:24px;padding:28px 0;border-bottom:1px solid #1a1a1a;align-items:start}
+.feat-item:last-child{border-bottom:none}
+.feat-n{font-size:11px;color:#555;letter-spacing:.1em;padding-top:4px}
+.feat-name{font-family:‘Syne’,sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
+.feat-desc{font-size:13px;line-height:1.7;color:#666}
+.feat-tag{display:inline-block;margin-top:10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid #333;padding:2px 8px;color:#555}
 
-.hero-sub {
-  font-size: 17px; font-weight: 600;
-  color: #bbb;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
+/* ARCH */
+.arch-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#222}
+.arch-cell{background:#000;padding:24px;border:none}
+.arch-cell-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#555;margin-bottom:12px}
+.arch-cell-name{font-family:‘Syne’,sans-serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:6px}
+.arch-cell-sub{font-size:11px;color:#555}
 
-.hero-desc {
-  font-size: 16px; line-height: 1.7;
-  color: #ccc;
-  max-width: 420px;
-  margin-bottom: 32px;
-}
+.arch-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#222;margin-top:1px}
+.am{background:#000;padding:16px;text-align:center}
+.am-l{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#555;margin-bottom:6px}
+.am-v{font-size:13px;font-weight:700;color:#fff}
 
-.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+/* STACK */
+.stack-list{display:flex;flex-direction:column}
+.stack-row{display:grid;grid-template-columns:160px 1fr;padding:14px 0;border-bottom:1px solid #111;font-size:13px}
+.stack-row:last-child{border-bottom:none}
+.sk{color:#555;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding-top:2px}
+.sv{color:#fff}
+.sv span{color:#aaa}
 
-.btn-primary {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
-  color: #000;
-  background: var(--yellow);
-  padding: 12px 24px;
-  text-decoration: none;
-  display: inline-block;
-  transition: all 0.2s;
-  border-radius: 2px;
-}
-.btn-primary:hover { background: #fff; box-shadow: 0 0 24px var(--yellow-glow); }
+/* STATUS */
+.status{display:flex;align-items:center;gap:24px;padding:16px;background:#000;border:1px solid #222;margin-top:64px;font-size:11px;flex-wrap:wrap}
+.sdot{width:6px;height:6px;border-radius:50%;background:#28c840;box-shadow:0 0 6px #28c840;animation:pu 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+.si{color:#555}.si b{color:#fff}
+.ss{flex:1}
 
-.btn-secondary {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
-  color: #aaa;
-  border: 1px solid var(--border);
-  padding: 12px 24px;
-  text-decoration: none;
-  display: inline-block;
-  transition: all 0.2s;
-}
-.btn-secondary:hover { color: var(--text); border-color: #666; }
+/* BACK */
+.back{position:fixed;bottom:24px;right:24px;z-index:200;display:inline-block;font-family:‘IBM Plex Mono’,monospace;font-size:11px;letter-spacing:.08em;background:#000;color:#555;border:1px solid #333;padding:8px 16px;transition:color .15s,border-color .15s}
+.back:hover{color:#fff;border-color:#fff}
 
-/* ── TERMINAL ── */
-.terminal {
-  background: #0d0d0d;
-  border: 1px solid #2a2a2a;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
-  overflow: hidden;
+@media(max-width:640px){
+.h-title{font-size:72px}
+.arch-grid{grid-template-columns:1fr}
+.arch-meta{grid-template-columns:1fr 1fr}
+.stack-row{grid-template-columns:100px 1fr}
+.feat-item{grid-template-columns:40px 1fr;gap:12px}
 }
-.terminal-header {
-  background: #161616;
-  border-bottom: 1px solid #222;
-  padding: 8px 14px;
-  display: flex; align-items: center; gap: 6px;
-}
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot-r { background: #ff5f57; }
-.dot-y { background: #febc2e; }
-.dot-g { background: #28c840; }
-.terminal-title { color: #666; margin-left: 8px; font-size: 11px; letter-spacing: 0.08em; }
-.terminal-body { padding: 18px; }
-.t-line { margin-bottom: 7px; line-height: 1.5; }
-.t-blank { height: 8px; }
-.t-prompt { color: var(--yellow); }
-.t-cmd    { color: #fff; }
-.t-comment{ color: #666; }
-.t-ok     { color: #28c840; }
-.t-info   { color: var(--cf); }
-.t-warn   { color: var(--ioi); }
-.t-purple { color: var(--icpc); }
-.t-dim    { color: #999; }
+</style>
 
-.badge {
-  display: inline-block;
-  font-size: 10px; font-weight: 700;
-  padding: 2px 6px;
-  margin-right: 6px;
-  border-radius: 2px;
-}
-.badge-cf   { background: rgba(74,158,255,0.25);  color: var(--cf); }
-.badge-ioi  { background: rgba(255,107,61,0.25);  color: var(--ioi); }
-.badge-icpc { background: rgba(156,74,255,0.25);  color: var(--icpc); }
-
-.cursor {
-  display: inline-block;
-  width: 7px; height: 13px;
-  background: var(--yellow);
-  vertical-align: middle;
-  animation: blink 1s step-end infinite;
-}
-@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
-
-/* ── SECTION HEADER ── */
-.section-header {
-  display: flex; align-items: center; gap: 16px;
-  margin: 72px 0 32px;
-}
-.section-num {
-  font-family: 'Orbitron', monospace;
-  font-size: 11px; color: var(--yellow);
-  letter-spacing: 0.2em; opacity: 0.6;
-}
-.section-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 13px; font-weight: 700;
-  letter-spacing: 0.3em; text-transform: uppercase;
-  color: var(--muted);
-}
-.section-line { flex: 1; height: 1px; background: var(--border); }
-
-/* ── FEATURES ── */
-.features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
-
-.feature {
-  background: var(--surface);
-  padding: 28px;
-  position: relative; overflow: hidden;
-  transition: background 0.2s;
-}
-.feature::before {
-  content: " ";
-  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: var(--accent-color, var(--yellow));
-  opacity: 0; transition: opacity 0.2s;
-}
-.feature:hover { background: #161616; }
-.feature:hover::before { opacity: 1; }
-
-.feature-icon {
-  font-size: 11px; letter-spacing: 0.2em;
-  font-family: 'Share Tech Mono', monospace;
-  margin-bottom: 12px;
-  display: flex; align-items: center; gap: 8px;
-}
-.feature-icon::after {
-  content: " "; flex: 1; height: 1px;
-  background: currentColor; opacity: 0.2;
-}
-.feature h3 {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 21px; font-weight: 700;
-  color: #f0f0f0;
-  margin-bottom: 10px;
-}
-.feature p { font-size: 14px; line-height: 1.65; color: #bbb; }
-
-.feature-tag {
-  display: inline-flex; gap: 4px; align-items: center;
-  margin-top: 14px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; letter-spacing: 0.1em;
-  padding: 3px 8px;
-  border: 1px solid;
-  border-radius: 2px;
-}
-
-.rating-scale { display: flex; gap: 2px; margin-top: 12px; }
-.rating-cell {
-  flex: 1; padding: 8px 4px; text-align: center;
-  background: #0d0d0d; border: 1px solid #1a1a1a;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing: 0.05em;
-}
-.rating-cell .r-val { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
-
-/* ── ARCHITECTURE ── */
-.arch {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 32px;
-}
-.arch-grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 0; align-items: center;
-}
-.arch-box {
-  background: #0d0d0d; border: 1px solid #2a2a2a;
-  padding: 18px; text-align: center;
-}
-.arch-box-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing: 0.25em;
-  text-transform: uppercase; color: #777; margin-bottom: 10px;
-}
-.arch-box-name {
-  font-family: 'Orbitron', monospace;
-  font-size: 14px; font-weight: 700; letter-spacing: 0.05em;
-}
-.arch-box-detail {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; color: #aaa; margin-top: 6px;
-}
-.arch-arrow { text-align: center; padding: 0 16px; }
-.arch-arrow-line { display: flex; align-items: center; }
-.arch-arrow-shaft { flex: 1; height: 1px; background: #333; }
-.arch-arrow-head {
-  width: 0; height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 8px solid #333;
-}
-.arch-arrow-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; color: #555; letter-spacing: 0.1em;
-  text-align: center; margin-top: 6px;
-}
-.arch-layers {
-  margin-top: 24px;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
-}
-.arch-layer {
-  background: #0d0d0d; border: 1px solid #1e1e1e;
-  padding: 14px 10px; text-align: center;
-}
-.arch-layer-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px; letter-spacing: 0.2em; color: #aaa; margin-bottom: 8px;
-}
-.arch-layer-value {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 15px; font-weight: 700;
-}
-
-/* ── STACK ── */
-.stack-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 12px; }
-.stack-table tr { border-bottom: 1px solid #161616; }
-.stack-table tr:last-child { border-bottom: none; }
-.stack-table td { padding: 14px 16px; }
-.td-cat { color: #aaa; letter-spacing: 0.15em; text-transform: uppercase; width: 160px; font-size: 10px; }
-.td-val { color: #f0f0f0; }
-.td-val span { color: var(--yellow); background: var(--yellow-dim); padding: 2px 8px; margin-right: 6px; font-size: 11px; }
-.stack-table tr:hover { background: #0f0f0f; }
-
-/* ── STATUS BAR ── */
-.status-bar {
-  display: flex; align-items: center; gap: 24px;
-  padding: 14px 20px;
-  background: #0d0d0d; border: 1px solid var(--border);
-  font-family: 'Share Tech Mono', monospace; font-size: 11px;
-  margin-top: 56px; flex-wrap: wrap;
-}
-.status-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #28c840; box-shadow: 0 0 6px #28c840;
-  animation: pulse-dot 2s ease-in-out infinite; flex-shrink: 0;
-}
-@keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-.status-item { color: #aaa; }
-.status-item span { color: var(--yellow); }
-.status-spacer { flex: 1; }
-
-/* ── BACK FLOAT ── */
-.back-float {
-  position: fixed; bottom: 28px; right: 28px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px; letter-spacing: 0.1em;
-  color: #aaa; text-decoration: none;
-  border: 1px solid var(--border);
-  padding: 8px 14px;
-  background: rgba(10,10,10,0.92);
-  backdrop-filter: blur(8px);
-  transition: all 0.2s;
-  z-index: 200;
-}
-.back-float:hover { color: var(--yellow); border-color: var(--yellow); }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 700px) {
-  .hero { grid-template-columns: 1fr; gap: 36px; padding: 40px 0 32px; }
-  .features { grid-template-columns: 1fr; }
-  .arch { padding: 20px; }
-  .arch-grid { grid-template-columns: 1fr; gap: 12px; }
-  .arch-arrow { transform: rotate(90deg); }
-  .arch-layers { grid-template-columns: 1fr 1fr; }
-  .status-bar { gap: 12px; }
-  h1 { font-size: 36px; }
-  .back-float { bottom: 16px; right: 16px; font-size: 10px; padding: 6px 12px; }
-}
-```
-
-  </style>
 </head>
-<body style="background:#0a0a0a;background-color:#0a0a0a;color:#f0f0f0;">
+<body>
 
-<header>
-  <div class="header-inner">
-    <div class="logo">HDD</div>
+<nav>
+  <div class="nav-in">
+    <span class="logo">HDD</span>
+    <span class="nav-tag">Codeforces Dashboard</span>
   </div>
-</header>
+</nav>
 
 <div class="page">
 
-  <!-- HERO -->
+<section class="hero">
+  <div class="h-eyebrow">competitive programming tool</div>
+  <div class="h-title">H<span class="acc">D</span>D</div>
+  <p class="h-desc">A Codeforces dashboard for tracking upcoming contests and getting personalised daily problem recommendations &mdash; calibrated to your rating, filtered for what you have not solved yet.</p>
+  <div class="h-btns">
+    <a href="https://hdd.up.railway.app/" target="_blank" class="btn-a">Launch App</a>
+    <a href="https://github.com/enlorik/HDD" target="_blank" class="btn-b">Source Code</a>
+  </div>
 
-  <section class="hero">
-    <div>
-      <div class="hero-eyebrow">COMPETITIVE PROGRAMMING</div>
-      <h1>HDD</h1>
-      <div class="hero-sub">Contest &amp; Training Dashboard</div>
-      <p class="hero-desc">
-        A Codeforces dashboard for tracking upcoming contests and getting personalised daily problem recommendations — calibrated to your rating, filtered for what you haven't solved yet.
-      </p>
-      <div class="hero-actions">
-        <a href="https://hdd.up.railway.app/" target="_blank" class="btn-primary">LAUNCH APP</a>
-        <a href="https://github.com/enlorik/HDD" target="_blank" class="btn-secondary">SOURCE CODE</a>
+  <div class="term">
+    <div class="term-bar">
+      <div class="d dr"></div>
+      <div class="d dy"></div>
+      <div class="d dg"></div>
+      <span class="term-label">hdd &mdash; init</span>
+    </div>
+    <div class="term-body">
+      <div><span class="tp">$</span> <b>hdd start</b></div>
+      <div>&nbsp;</div>
+      <div><span class="tok">&#10003;</span> <span class="tdim">contest timeline</span> <span class="tok">loaded</span></div>
+      <div><span class="tok">&#10003;</span> <span class="tdim">codeforces api</span> <span class="tok">connected</span></div>
+      <div><span class="tok">&#10003;</span> <span class="tdim">user profile</span> <span class="tok">enlorik</span></div>
+      <div>&nbsp;</div>
+      <div><span class="tc">// upcoming contests</span></div>
+      <div><span class="tbg tcf">CF</span><span class="tbl">Codeforces Round 1010</span></div>
+      <div><span class="tbg ticpc">ICPC</span><span class="tpu">ICPC Online Challenge</span></div>
+      <div><span class="tbg tioi">IOI</span><span class="tor">IOI 2025 Practice</span></div>
+      <div>&nbsp;</div>
+      <div><span class="tc">// daily problem</span></div>
+      <div><span class="tbl">2048F</span> <span class="tdim">Minimizing the Sum</span></div>
+      <div><span class="tdim">rating:</span> <span class="tor">1800</span> <span class="tdim">|</span> <span class="tok">not solved</span></div>
+      <div>&nbsp;</div>
+      <div><span class="tp">$</span> <span class="cur"></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-head">
+    <span class="sec-n">01</span>
+    <span class="sec-t">Features</span>
+  </div>
+  <div class="feat-list">
+    <div class="feat-item">
+      <div class="feat-n">01</div>
+      <div>
+        <div class="feat-name">Contest Calendar</div>
+        <p class="feat-desc">Weekly view of upcoming and live Codeforces contests. Color-coded by type &mdash; CF, IOI, ICPC. Toggle individual events, preferences persist across sessions.</p>
+        <span class="feat-tag">Timeline</span>
       </div>
     </div>
+    <div class="feat-item">
+      <div class="feat-n">02</div>
+      <div>
+        <div class="feat-name">Bounty Board</div>
+        <p class="feat-desc">Card grid of all active and upcoming contests. Each card shows type, phase, and start date. One tap to go straight to the contest on Codeforces.</p>
+        <span class="feat-tag">Real-time</span>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-n">03</div>
+      <div>
+        <div class="feat-name">Daily Problems</div>
+        <p class="feat-desc">One problem per algorithm tag, calibrated to your rating. Filters out problems you have already solved. Rotates daily by UTC date &mdash; same picks all day, fresh ones tomorrow.</p>
+        <span class="feat-tag">Personalised</span>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-n">04</div>
+      <div>
+        <div class="feat-name">Profile</div>
+        <p class="feat-desc">Set your Codeforces handle once. Stored in localStorage &mdash; no account, no backend, no tracking. Used to fetch your rating and exclude solved problems.</p>
+        <span class="feat-tag">No login</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-```
-<div class="terminal">
-  <div class="terminal-header">
-    <div class="dot dot-r"></div>
-    <div class="dot dot-y"></div>
-    <div class="dot dot-g"></div>
-    <div class="terminal-title">hdd // dashboard init</div>
+<section class="sec">
+  <div class="sec-head">
+    <span class="sec-n">02</span>
+    <span class="sec-t">Architecture</span>
   </div>
-  <div class="terminal-body">
-    <div class="t-line"><span class="t-prompt">&gt;</span> <span class="t-cmd">hdd start</span></div>
-    <div class="t-blank"></div>
-    <div class="t-line"><span class="t-ok">&#10003;</span> <span class="t-dim">contest timeline</span> <span class="t-ok">loaded</span></div>
-    <div class="t-line"><span class="t-ok">&#10003;</span> <span class="t-dim">codeforces api</span> <span class="t-ok">connected</span></div>
-    <div class="t-line"><span class="t-ok">&#10003;</span> <span class="t-dim">user profile</span> <span class="t-ok">enlorik</span></div>
-    <div class="t-blank"></div>
-    <div class="t-line"><span class="t-comment">// upcoming contests</span></div>
-    <div class="t-line"><span class="badge badge-cf">CF</span><span class="t-info">Codeforces Round 1010</span></div>
-    <div class="t-line"><span class="badge badge-icpc">ICPC</span><span class="t-purple">ICPC Online Challenge</span></div>
-    <div class="t-line"><span class="badge badge-ioi">IOI</span><span class="t-warn">IOI 2025 Practice</span></div>
-    <div class="t-blank"></div>
-    <div class="t-line"><span class="t-comment">// daily problem (dp)</span></div>
-    <div class="t-line"><span class="t-info">2048F</span> <span class="t-dim">Minimizing the Sum</span></div>
-    <div class="t-line"><span class="t-dim">rating:</span> <span class="t-warn">1800</span> <span class="t-dim">|</span> <span class="t-ok">not solved</span></div>
-    <div class="t-blank"></div>
-    <div class="t-line"><span class="t-prompt">&gt;</span> <span class="cursor"></span></div>
+  <div class="arch-grid">
+    <div class="arch-cell">
+      <div class="arch-cell-label">Client</div>
+      <div class="arch-cell-name">React SPA</div>
+      <div class="arch-cell-sub">Vite &middot; React Router v7</div>
+    </div>
+    <div class="arch-cell">
+      <div class="arch-cell-label">Server</div>
+      <div class="arch-cell-name">Express 5</div>
+      <div class="arch-cell-sub">CORS proxy &middot; Rate limiter</div>
+    </div>
+    <div class="arch-cell">
+      <div class="arch-cell-label">External API</div>
+      <div class="arch-cell-name">Codeforces</div>
+      <div class="arch-cell-sub">contest.list &middot; user.*</div>
+    </div>
   </div>
+  <div class="arch-meta">
+    <div class="am"><div class="am-l">Routing</div><div class="am-v">React Router</div></div>
+    <div class="am"><div class="am-l">State</div><div class="am-v">localStorage</div></div>
+    <div class="am"><div class="am-l">Deploy</div><div class="am-v">Railway</div></div>
+    <div class="am"><div class="am-l">Build</div><div class="am-v">Vite 7</div></div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-head">
+    <span class="sec-n">03</span>
+    <span class="sec-t">Stack</span>
+  </div>
+  <div class="stack-list">
+    <div class="stack-row"><span class="sk">UI</span><span class="sv">React 19 <span>&mdash; concurrent features</span></span></div>
+    <div class="stack-row"><span class="sk">Build</span><span class="sv">Vite 7 <span>&mdash; sub-second HMR</span></span></div>
+    <div class="stack-row"><span class="sk">Routing</span><span class="sv">React Router v7 <span>&mdash; client SPA</span></span></div>
+    <div class="stack-row"><span class="sk">Styling</span><span class="sv">CSS Modules <span>&mdash; scoped per component</span></span></div>
+    <div class="stack-row"><span class="sk">Server</span><span class="sv">Express 5 <span>&mdash; SPA + API proxy</span></span></div>
+    <div class="stack-row"><span class="sk">State</span><span class="sv">localStorage <span>&mdash; no DB needed</span></span></div>
+    <div class="stack-row"><span class="sk">Deploy</span><span class="sv">Railway <span>&mdash; Nixpacks, auto-restart</span></span></div>
+  </div>
+</section>
+
+<div class="status">
+  <div class="sdot"></div>
+  <div class="si">STATUS <b>LIVE</b></div>
+  <div class="si">HOST <b>railway.app</b></div>
+  <div class="si">API <b>Codeforces</b></div>
+  <div class="ss"></div>
+  <div class="si">React 19 + Vite 7</div>
 </div>
-```
-
-  </section>
-
-  <!-- FEATURES -->
-
-  <div class="section-header">
-    <span class="section-num">01</span>
-    <span class="section-title">Features</span>
-    <div class="section-line"></div>
-  </div>
-  <div class="features">
-    <div class="feature" style="--accent-color:var(--cf)">
-      <div class="feature-icon" style="color:var(--cf)">TIMELINE</div>
-      <h3>Contest Calendar</h3>
-      <p>Weekly view of upcoming and live Codeforces contests. Color-coded by type — CF, IOI, ICPC. Toggle events and persist preferences across sessions.</p>
-      <div class="feature-tag" style="color:var(--cf);background:rgba(74,158,255,0.06);border-color:rgba(74,158,255,0.2);">
-        <span class="badge badge-cf">CF</span><span class="badge badge-ioi">IOI</span><span class="badge badge-icpc">ICPC</span>
-      </div>
-    </div>
-    <div class="feature" style="--accent-color:var(--ioi)">
-      <div class="feature-icon" style="color:var(--ioi)">BOUNTY BOARD</div>
-      <h3>Active Contests</h3>
-      <p>Card grid of all active and upcoming contests. Each card shows type, phase, and start date. One click to jump to the contest page.</p>
-      <div class="feature-tag" style="color:var(--ioi);background:rgba(255,107,61,0.06);border-color:rgba(255,107,61,0.2);">REAL-TIME DATA</div>
-    </div>
-    <div class="feature" style="--accent-color:var(--yellow)">
-      <div class="feature-icon" style="color:var(--yellow)">DAILY</div>
-      <h3>Problem Recommendations</h3>
-      <p>One problem per algorithm tag, personalised to your rating. Filters out solved problems. Rotates daily by UTC date — same picks all day, new ones tomorrow.</p>
-      <div class="rating-scale">
-        <div class="rating-cell"><div class="r-val" style="color:#28c840">&le;1200</div><div style="color:#666">easy</div></div>
-        <div class="rating-cell"><div class="r-val" style="color:var(--cf)">&le;1600</div><div style="color:#666">med</div></div>
-        <div class="rating-cell"><div class="r-val" style="color:var(--ioi)">&le;2000</div><div style="color:#666">hard</div></div>
-        <div class="rating-cell"><div class="r-val" style="color:#ff5f57">&gt;2000</div><div style="color:#666">epic</div></div>
-      </div>
-    </div>
-    <div class="feature" style="--accent-color:var(--icpc)">
-      <div class="feature-icon" style="color:var(--icpc)">PROFILE</div>
-      <h3>Local Handle Storage</h3>
-      <p>Set your Codeforces handle once. Stored in <code style="color:var(--icpc)">localStorage</code> — no account, no backend, no tracking. Used to fetch your rating and exclude solved problems.</p>
-      <div class="feature-tag" style="color:var(--icpc);background:rgba(156,74,255,0.06);border-color:rgba(156,74,255,0.2);">NO ACCOUNT NEEDED</div>
-    </div>
-  </div>
-
-  <!-- ARCHITECTURE -->
-
-  <div class="section-header">
-    <span class="section-num">02</span>
-    <span class="section-title">Architecture</span>
-    <div class="section-line"></div>
-  </div>
-  <div class="arch">
-    <div class="arch-grid">
-      <div class="arch-box">
-        <div class="arch-box-label">CLIENT</div>
-        <div class="arch-box-name" style="color:var(--yellow)">React SPA</div>
-        <div class="arch-box-detail">Vite · React Router v7</div>
-      </div>
-      <div class="arch-arrow">
-        <div class="arch-arrow-line"><div class="arch-arrow-shaft"></div><div class="arch-arrow-head"></div></div>
-        <div class="arch-arrow-label">HTTP proxy</div>
-      </div>
-      <div class="arch-box">
-        <div class="arch-box-label">SERVER</div>
-        <div class="arch-box-name" style="color:var(--cf)">Express 5</div>
-        <div class="arch-box-detail">CORS proxy · Rate limiter</div>
-      </div>
-    </div>
-    <div style="margin-top:16px;text-align:center;">
-      <div style="display:inline-block;width:1px;height:24px;background:#333;"></div>
-    </div>
-    <div style="display:flex;justify-content:center;">
-      <div class="arch-box" style="width:220px;">
-        <div class="arch-box-label">EXTERNAL API</div>
-        <div class="arch-box-name" style="color:var(--ioi)">Codeforces API</div>
-        <div class="arch-box-detail">contest.list · problemset · user.*</div>
-      </div>
-    </div>
-    <div class="arch-layers">
-      <div class="arch-layer"><div class="arch-layer-label">ROUTING</div><div class="arch-layer-value" style="color:var(--yellow)">React Router</div></div>
-      <div class="arch-layer"><div class="arch-layer-label">STATE</div><div class="arch-layer-value" style="color:var(--cf)">localStorage</div></div>
-      <div class="arch-layer"><div class="arch-layer-label">DEPLOY</div><div class="arch-layer-value" style="color:var(--ioi)">Railway</div></div>
-      <div class="arch-layer"><div class="arch-layer-label">BUILD</div><div class="arch-layer-value" style="color:var(--icpc)">Vite 7</div></div>
-    </div>
-  </div>
-
-  <!-- STACK -->
-
-  <div class="section-header">
-    <span class="section-num">03</span>
-    <span class="section-title">Stack</span>
-    <div class="section-line"></div>
-  </div>
-  <div style="background:var(--surface);border:1px solid var(--border);">
-    <table class="stack-table">
-      <tr><td class="td-cat">UI Framework</td><td class="td-val"><span>React 19</span> latest concurrent features</td></tr>
-      <tr><td class="td-cat">Build Tool</td><td class="td-val"><span>Vite 7</span> sub-second HMR</td></tr>
-      <tr><td class="td-cat">Routing</td><td class="td-val"><span>React Router v7</span> client-side SPA</td></tr>
-      <tr><td class="td-cat">Styling</td><td class="td-val"><span>CSS Modules</span> per-component scoped files</td></tr>
-      <tr><td class="td-cat">Production Server</td><td class="td-val"><span>Express 5</span> SPA serving + CF API proxy</td></tr>
-      <tr><td class="td-cat">State Persistence</td><td class="td-val"><span>localStorage</span> no database required</td></tr>
-      <tr><td class="td-cat">Deployment</td><td class="td-val"><span>Railway</span> Nixpacks build · auto-restart</td></tr>
-    </table>
-  </div>
-
-  <!-- STATUS -->
-
-  <div class="status-bar">
-    <div class="status-dot"></div>
-    <div class="status-item">STATUS <span>LIVE</span></div>
-    <div class="status-item">HOST <span>railway.app</span></div>
-    <div class="status-item">TAGS <span>34</span></div>
-    <div class="status-item">DATA SOURCE <span>Codeforces API</span></div>
-    <div class="status-spacer"></div>
-    <div class="status-item" style="color:#555">React 19 + Vite 7</div>
-  </div>
 
 </div>
 
-<a href="../index.html" class="back-float">← portfolio</a>
+<a href="../index.html" class="back">← portfolio</a>
 
 </body>
 </html>
