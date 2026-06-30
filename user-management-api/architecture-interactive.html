@@ -686,16 +686,19 @@ function applyStep(flowKey, stepIdx) {
     });
   }
 
-  // Scroll to the current step's first node, or top if step 0
+  // Scroll to the current step's parent layer/section, not the node itself
   const currentNodes = flow.steps[stepIdx].nodes;
   if (currentNodes.length === 0) {
     smoothScrollTo(0);
   } else {
     const target = document.getElementById(currentNodes[0]);
     if (target) {
+      // Walk up to the nearest .section first (the coloured box grouping),
+      // then .layer (the full row), so nodes sharing a box never cause a micro-scroll
+      const scrollAnchor = target.closest('.section') || target.closest('.layer') || target;
       const topBar = document.getElementById('stepDesc');
       const offset = topBar ? topBar.offsetHeight + 80 : 140;
-      const targetTop = target.getBoundingClientRect().top + window.scrollY - offset;
+      const targetTop = scrollAnchor.getBoundingClientRect().top + window.scrollY - offset;
       smoothScrollTo(targetTop);
     }
   }
